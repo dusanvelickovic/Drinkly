@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619305696223",
+    "project_id": "drinkly-218e9",
+    "storage_bucket": "drinkly-218e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619305696223:android:19c7768890fbfe6b7a626a",
+        "android_client_info": {
+          "package_name": "com.example.drinkly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc3F9XThjyXne9PDudLrMYdLnxxDbnERA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
