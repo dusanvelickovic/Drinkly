@@ -92,7 +92,7 @@ fun AppNavigation(
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = "home",
+            startDestination = "search",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") { HomeScreen() }

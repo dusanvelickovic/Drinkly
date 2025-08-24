@@ -13,49 +13,75 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.*
-import timber.log.Timber
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(),
 ) {
-    // Initialize the camera position state, which controls the camera's position on the map
     val cameraPositionState = rememberCameraPositionState()
-
-    // Obtain the current context
     val context = LocalContext.current
-
-    // Trenutna lokacija korisnika
     val userLocation by homeViewModel.userLocation
+    val hasLocationPermission by homeViewModel.hasLocationPermission
+//    val venues by homeViewModel.venues
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
-    // Launcher za zahtev za dozvolu
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // Dozvola je odobrena, dohvati korisnikovu lokaciju i ažuriraj kameru
+    ) { granted ->
+        homeViewModel.updateLocationPermissionGranted(granted)
+        if (granted) {
             homeViewModel.fetchUserLocation(context, fusedLocationClient)
         } else {
-            // Handle the case when permission is denied
-            Timber.e("Location permission was denied by the user.")
+            println("User denied location permission")
         }
     }
 
-    // Dozvola za lokaciju
+    // Inicijalno podešavanje dozvola i lokacije
     LaunchedEffect(Unit) {
-        when (PackageManager.PERMISSION_GRANTED) {
-            // Proveri da li je dozvola za pristup lokaciji odobrena
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                // Dozvola je odobrena, dohvati korisnikovu lokaciju i ažuriraj kameru
-                homeViewModel.fetchUserLocation(context, fusedLocationClient)
-            }
-            else -> {
-                // Dozvola nije odobrena, pokreni zahtev za dozvolu
-                permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            }
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        homeViewModel.updateLocationPermissionGranted(granted)
+
+        if (granted) {
+            homeViewModel.fetchUserLocation(context, fusedLocationClient)
+        } else {
+            permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
+
+        // Učitaj venues odmah
+//        homeViewModel.fetchVenues()
+    }
+
+    // Postavi kameru kada se učita korisnikova lokacija
+    LaunchedEffect(userLocation) {
+        userLocation?.let { location ->
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 14f)
+            println("Kamera pozicionirana na: ${location.latitude}, ${location.longitude}")
+        }
+    }
+
+    val mapStyleOptions = remember {
+        MapStyleOptions(
+            """
+            [
+              {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": [ { "visibility": "off" } ]
+              }
+            ]
+            """.trimIndent()
+        )
     }
 
     Column(
@@ -67,19 +93,54 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(
-                isMyLocationEnabled = userLocation != null,
-            ),
+                isMyLocationEnabled = hasLocationPermission && userLocation != null,
+                mapStyleOptions = mapStyleOptions
+            )
         ) {
-            // If the user's location is available, place a marker on the map
-            userLocation?.let {
-//                Marker(
-//                    state = MarkerState(position = it), // Place the marker at the user's location
-//                    title = "Your Location", // Set the title for the marker
-//                    snippet = "This is where you are currently located." // Set the snippet for the marker
-//                )
-                // Pozicioniraj kameru na korisnikovu lokaciju
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 16f)
+            // Marker za korisničku lokaciju
+            userLocation?.let { location ->
+                Marker(
+                    state = MarkerState(position = location),
+                    title = "Your Location",
+                    snippet = "You are here"
+                )
             }
+
+            // Markeri za venues
+//            venues?.forEach { venue ->
+//                venue.location?.let { gp ->
+//                    // Proveri da li su koordinate validne
+//                    if (gp.latitude != 0.0 && gp.longitude != 0.0) {
+//                        val venuePosition = LatLng(gp.latitude, gp.longitude)
+//                        Marker(
+//                            state = MarkerState(position = venuePosition),
+//                            title = venue.name ?: "Venue",
+//                            snippet = venue.address ?: "No address",
+//                            // Možete dodati custom ikonu ako je potrebno
+//                            // icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+//                        )
+//                        println("Added marker for: ${venue.name} at ${gp.latitude}, ${gp.longitude}")
+//                    } else {
+//                        println("Invalid coordinates for venue: ${venue.name} (${gp.latitude}, ${gp.longitude})")
+//                    }
+//                } ?: run {
+//                    println("No location data for venue: ${venue.name}")
+//                }
+//            } ?: run {
+//                println("No venues to display")
+//            }
+
+            // Hardcore marker za testiranje
+            Marker(
+                state = MarkerState(position = LatLng(43.3209, 21.8958)),
+                title = "Test Venue",
+                snippet = "This is a test marker"
+            )
+            Marker(
+                state = MarkerState(position = LatLng(44.7890, 20.4500)),
+                title = "Another Venue",
+                snippet = "This is another test marker"
+            )
         }
     }
 }

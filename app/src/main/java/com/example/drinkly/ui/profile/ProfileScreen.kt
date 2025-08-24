@@ -51,7 +51,7 @@ fun ProfileScreen(
                     contentDescription = "Back"
                 )
             }
-            Text(text = "Personal Info", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+            Text(text = "Personal Info", fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
             TextButton(onClick = { /* edit profile */ }) {
                 Text(text = "EDIT", color = Color(0xFFFF6600)) // narandžasta boja
             }

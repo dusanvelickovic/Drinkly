@@ -6,34 +6,63 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.drinkly.data.model.Venue
+import com.example.drinkly.data.repository.VenueRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
-import timber.log.Timber
+import kotlinx.coroutines.launch
 
-class HomeViewModel() : ViewModel() {
+class HomeViewModel(
+    private val venueRepository: VenueRepository = VenueRepository(),
+) : ViewModel() {
 
-    // State to hold the user's location as LatLng (latitude and longitude)
     private val _userLocation = mutableStateOf<LatLng?>(null)
     val userLocation: State<LatLng?> = _userLocation
 
-    // Function to fetch the user's location and update the state
+    private val _venues = mutableStateOf<List<Venue>?>(null)
+    val venues: State<List<Venue>?> = _venues
+
+    private val _hasLocationPermission = mutableStateOf(false)
+    val hasLocationPermission: State<Boolean> = _hasLocationPermission
+
+    fun updateLocationPermissionGranted(granted: Boolean) {
+        _hasLocationPermission.value = granted
+    }
+
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
-        // Check if the location permission is granted
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            _hasLocationPermission.value = true
             try {
-                // Fetch the last known location
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
-                        // Update the user's location in the state
-                        val userLatLng = LatLng(it.latitude, it.longitude)
-                        _userLocation.value = userLatLng
+                        _userLocation.value = LatLng(it.latitude, it.longitude)
                     }
+                }.addOnFailureListener {
+                    println("Failed to get last location: ${it.message}")
                 }
-            } catch (e: SecurityException) {
-                Timber.e("Permission for location access was revoked: ${e.localizedMessage}")
+            } catch (se: SecurityException) {
+                println("SecurityException (location): ${se.message}")
             }
         } else {
-            Timber.e("Location permission is not granted.")
+            _hasLocationPermission.value = false
+            println("Location permission not granted")
         }
+    }
+
+    fun fetchVenues() {
+//        viewModelScope.launch {
+//            val result = venueRepository.fetchVenues()
+//            result.onSuccess {
+//                _venues.value = it
+//                println("Loaded ${it.size} venues")
+//            }.onFailure {
+//                println("Venue load failed: ${it.message}")
+//            }
+//        }
     }
 }
