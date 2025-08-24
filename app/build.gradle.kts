@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.animation.core.lint)
+//    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,4 +67,19 @@ dependencies {
     val nav_version = "2.9.3"
 
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+//    implementation("com.google.maps.android:maps-compose:4.3.3")
+//    implementation("com.google.maps.android:maps-compose-utils:4.3.3")
+//    implementation("com.google.maps.android:maps-compose-widgets:4.3.3")
+//    implementation("com.google.android.gms:play-services-location:21.0.1")
+//    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation(libs.places)
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
+    implementation(libs.timber)
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "secrets.properties"
 }
