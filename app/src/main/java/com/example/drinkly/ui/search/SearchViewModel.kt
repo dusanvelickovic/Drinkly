@@ -68,14 +68,15 @@ class SearchViewModel(
     val venues: State<List<Venue>?> = _venues
 
     fun fetchVenues() {
-//        viewModelScope.launch {
-//            val result = venueRepository.fetchVenues()
-//            if (result.isSuccess) {
-//                _venues.value = result.getOrNull()
-//            } else {
-//                val exception = result.exceptionOrNull()
-//                eventChannel.send(SearchEvent.Error(exception?.message ?: "Unknown error"))
-//            }
-//        }
+        viewModelScope.launch {
+            val result = venueRepository.fetchVenues()
+            if (result.isSuccess) {
+                _venues.value = result.getOrNull()
+                println("Fetched venues: ${_venues.value}")
+            } else {
+                val exception = result.exceptionOrNull()
+                eventChannel.send(SearchEvent.Error(exception?.message ?: "Unknown error"))
+            }
+        }
     }
 }

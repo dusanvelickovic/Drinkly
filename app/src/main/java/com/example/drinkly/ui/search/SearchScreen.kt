@@ -18,10 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+//import coil3.compose.AsyncImage
+import com.example.drinkly.data.model.Venue
+import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 
 data class Restaurant(
@@ -43,47 +49,19 @@ fun SearchScreen(
     var selectedCategoryId by remember { mutableStateOf("all") }
 
     val venues by searchViewModel.venues
-//    LaunchedEffect(Unit) {
-//        searchViewModel.fetchVenues()
-//    }
+    LaunchedEffect(Unit) {
+        searchViewModel.fetchVenues()
+    }
 
     val categories = searchViewModel.categories
-
-    val restaurants = remember {
-        listOf(
-            Restaurant(
-                id = "1",
-                name = "Rose Garden Restaurant",
-                categories = listOf("Burger", "Chicken", "Riche", "Wings"),
-                rating = 4.7,
-                deliveryTime = "20 min",
-                deliveryFee = "Free"
-            ),
-            Restaurant(
-                id = "2",
-                name = "Sunset Bistro",
-                categories = listOf("Italian", "Pasta", "Pizza"),
-                rating = 4.5,
-                deliveryTime = "25 min",
-                deliveryFee = "Free"
-            ),
-            Restaurant(
-                id = "3",
-                name = "Sunset Bistro",
-                categories = listOf("Italian", "Pasta", "Pizza"),
-                rating = 4.5,
-                deliveryTime = "25 min",
-                deliveryFee = "Free"
-            )
-        )
-    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(bottom = 10.dp)
     ) {
         // Greeting
         item {
@@ -129,7 +107,7 @@ fun SearchScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Kategorije",
+                        text = "Categories",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF2D3436)
@@ -169,7 +147,7 @@ fun SearchScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Lokali",
+                    text = "Venues",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF2D3436)
@@ -186,10 +164,13 @@ fun SearchScreen(
             }
         }
 
-        items(restaurants) { restaurant ->
+        items(
+            items = venues.orEmpty(),
+            key = { it.id ?: it.hashCode().toString() }
+        ) { venue ->
             VenueCard(
-                restaurant = restaurant,
-                onClick = { /* Handle restaurant click */ }
+                venue = venue,
+                onClick = { /* Handle venue click */ }
             )
         }
     }
@@ -238,9 +219,10 @@ fun CategoryChip(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun VenueCard(
-    restaurant: Restaurant,
+    venue: Venue,
     onClick: () -> Unit
 ) {
     Card(
@@ -255,103 +237,115 @@ fun VenueCard(
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Restaurant Image Placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF95A5A6)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Placeholder for restaurant image
+        Column {
+            // Venue Image
+            if (venue.imageUrl != null) {
+                GlideImage(
+                    model = venue.imageUrl,
+                    contentDescription = venue.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(190.dp)
+                       .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(AppColorGray),
+                    contentAlignment = Alignment.Center
+                ) {}
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // Restaurant Name
-            Text(
-                text = restaurant.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF2D3436)
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Categories
-            Text(
-                text = restaurant.categories.joinToString(" - "),
-                fontSize = 14.sp,
-                color = Color(0xFF636E72)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Rating, Delivery Fee, and Time
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                // Rating
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Rating",
-                        tint = Color(0xFFF39C12),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = restaurant.rating.toString(),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF2D3436)
-                    )
-                }
+                // Restaurant Name
+                Text(
+                    text = venue.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF2D3436)
+                )
 
-                // Delivery Fee
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = "Delivery",
-                        tint = Color(0xFF00B894),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = restaurant.deliveryFee,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF2D3436)
-                    )
-                }
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Delivery Time
+                // Categories
+                //            Text(
+                //                text = restaurant.categories.joinToString(" - "),
+                //                fontSize = 14.sp,
+                //                color = Color(0xFF636E72)
+                //            )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Rating, Delivery Fee, and Time
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = "Time",
-                        tint = Color(0xFF636E72),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = restaurant.deliveryTime,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF2D3436)
-                    )
+                    // Rating
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Rating",
+                            tint = Color(0xFFF39C12),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = venue.rating.toString(),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF2D3436)
+                        )
+                    }
+
+                    // Delivery Fee
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Call,
+                            contentDescription = "Delivery",
+                            tint = Color(0xFF00B894),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        //                    Text(
+                        //                        text = restaurant.deliveryFee,
+                        //                        fontSize = 14.sp,
+                        //                        fontWeight = FontWeight.Medium,
+                        //                        color = Color(0xFF2D3436)
+                        //                    )
+                    }
+
+                    // Delivery Time
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Call,
+                            contentDescription = "Time",
+                            tint = Color(0xFF636E72),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        //                    Text(
+                        //                        text = restaurant.deliveryTime,
+                        //                        fontSize = 14.sp,
+                        //                        fontWeight = FontWeight.Medium,
+                        //                        color = Color(0xFF2D3436)
+                        //                    )
+                    }
                 }
             }
         }

@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.animation.core.lint)
-//    implementation(libs.play.services.location)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,12 +60,14 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     val nav_version = "2.9.3"
-
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
 //    implementation("com.google.maps.android:maps-compose:4.3.3")
@@ -77,6 +79,9 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
     implementation(libs.timber)
+
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 }
 
 secrets {

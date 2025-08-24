@@ -21,6 +21,9 @@ data class Venue(
 
     @get:PropertyName("rating") @set:PropertyName("rating")
     var rating: Double = 0.0,
+
+    @get:PropertyName("image_url") @set:PropertyName("image_url")
+    var imageUrl: String = "",
 ) {
     // Potreban prazan konstruktor za Firestore
     constructor() : this("", "", "", null, "", 0.0)
