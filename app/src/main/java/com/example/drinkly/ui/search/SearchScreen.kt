@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,16 +26,33 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-//import coil3.compose.AsyncImage
+import com.example.drinkly.data.model.User
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
+import com.example.drinkly.viewmodel.AuthViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    searchViewModel: SearchViewModel = viewModel()
+    searchViewModel: SearchViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel (),
 ) {
+    var authUser by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(Unit) {
+        val result = authViewModel.getAuthUser()
+        authUser = result.getOrNull()
+        println(authUser)
+    }
+
+    // Determine greeting based on current time
+     val greeting = when (val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+         in 5..11 -> "Good Morning!"
+         in 12..17 -> "Good Afternoon!"
+         else -> "Good Evening!"
+     }
+
     var searchQuery by remember { mutableStateOf("") }
 
     var selectedCategory by remember { mutableStateOf("all") }
@@ -60,14 +78,25 @@ fun SearchScreen(
         contentPadding = PaddingValues(bottom = 10.dp)
     ) {
         // Greeting
-        item {
-            Text(
-                text = "Hey Halal, Good Afternoon!",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3436),
-            )
-        }
+       item {
+           Row(
+               verticalAlignment = Alignment.CenterVertically,
+               horizontalArrangement = Arrangement.spacedBy(8.dp)
+           ) {
+               Text(
+                   text = "Hello ${authUser?.first_name ?: "User"},",
+                   fontSize = 20.sp,
+                   fontWeight = FontWeight.Normal,
+                   color = Color(0xFF2D3436),
+               )
+               Text(
+                   text = greeting,
+                   fontSize = 20.sp,
+                   fontWeight = FontWeight.Medium,
+                   color = Color(0xFF2D3436),
+               )
+           }
+       }
 
         // Search Bar
         item {
@@ -76,7 +105,7 @@ fun SearchScreen(
                 onValueChange = { searchQuery = it },
                 placeholder = {
                     Text(
-                        text = "Search dishes, restaurants",
+                        text = "Search restaurants, pubs, cafes...",
                         color = Color(0xFF636E72)
                     )
                 },
@@ -105,7 +134,7 @@ fun SearchScreen(
                     Text(
                         text = "Categories",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Medium,
                         color = Color(0xFF2D3436)
                     )
                     TextButton(
@@ -145,7 +174,7 @@ fun SearchScreen(
                 Text(
                     text = "Venues",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     color = Color(0xFF2D3436)
                 )
                 TextButton(

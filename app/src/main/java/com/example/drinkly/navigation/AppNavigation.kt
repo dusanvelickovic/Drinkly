@@ -32,8 +32,8 @@ import androidx.compose.ui.draw.shadow
 fun AppNavigation(
     authViewModel: AuthViewModel = viewModel ()
 ) {
-     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
-//    val isAuthenticated = true
+//     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+    val isAuthenticated = true
     val navController = rememberNavController()
 
     val items = listOf(
@@ -92,7 +92,7 @@ fun AppNavigation(
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = "login",
+            startDestination = "search",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") { HomeScreen() }
