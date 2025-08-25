@@ -8,8 +8,14 @@ class VenueRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     // Fetch venues
-    suspend fun fetchVenues(): Result<List<Venue>> = try {
-        val snapshot = db.collection("venues").get().await()
+    suspend fun fetchVenues(category: String = "all"): Result<List<Venue>> = try {
+        val query = if (category == "all") {
+            db.collection("venues")
+        } else {
+            db.collection("venues").whereEqualTo("category", category)
+        }
+
+        val snapshot = query.get().await()
         val venues = snapshot.documents.mapNotNull { document ->
             try {
                 val venue = document.toObject(Venue::class.java)
@@ -21,7 +27,7 @@ class VenueRepository(
         }
         Result.success(venues)
     } catch (e: Exception) {
-        println("Failed to fetch venues")
+        println("Failed to fetch venues for category $category")
         Result.failure(e)
     }
 

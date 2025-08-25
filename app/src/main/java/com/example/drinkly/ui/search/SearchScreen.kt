@@ -46,7 +46,12 @@ fun SearchScreen(
     searchViewModel: SearchViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCategoryId by remember { mutableStateOf("all") }
+
+    var selectedCategory by remember { mutableStateOf("all") }
+    // When selectedCategory changes, fetch venues for that category
+    LaunchedEffect(selectedCategory) {
+        searchViewModel.fetchVenues(selectedCategory)
+    }
 
     val venues by searchViewModel.venues
     LaunchedEffect(Unit) {
@@ -131,8 +136,8 @@ fun SearchScreen(
                     items(categories) { category ->
                         CategoryChip(
                             category = category,
-                            isSelected = selectedCategoryId == category.id,
-                            onClick = { selectedCategoryId = category.id }
+                            isSelected = selectedCategory == category.key,
+                            onClick = { selectedCategory = category.key }
                         )
                     }
                 }

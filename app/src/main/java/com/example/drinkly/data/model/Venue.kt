@@ -16,8 +16,8 @@ data class Venue(
     @get:PropertyName("location") @set:PropertyName("location")
     var location: GeoPoint? = null,
 
-    @get:PropertyName("type") @set:PropertyName("type")
-    var type: String = "",
+    @get:PropertyName("category") @set:PropertyName("category")
+    var category: String = "",
 
     @get:PropertyName("rating") @set:PropertyName("rating")
     var rating: Double = 0.0,

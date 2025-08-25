@@ -20,10 +20,10 @@ sealed class SearchEvent {
 
 data class Category(
     val id: String,
+    val key: String,
     val name: String,
     val isSelected: Boolean = false
 )
-
 
 class SearchViewModel(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
@@ -54,25 +54,25 @@ class SearchViewModel(
 //    }
 
     private val _categories = listOf<Category>(
-        Category(id = "all", name = "Sve", isSelected = true),
-        Category(id = "1", name = "Restoran"),
-        Category(id = "2", name = "Kafić"),
-        Category(id = "3", name = "Bar"),
-        Category(id = "4", name = "Pivnica"),
-        Category(id = "5", name = "Kafana"),
-        Category(id = "6", name = "Fast Food"),
+        Category(id = "all", key = "all", name = "Sve", isSelected = true),
+        Category(id = "1", key="restaurant", name = "Restoran"),
+        Category(id = "2", key="caffe", name = "Kafić"),
+        Category(id = "3", key="bar", name = "Bar"),
+        Category(id = "4", key="pub", name = "Pivnica"),
+        Category(id = "5", key="kafana", name = "Kafana"),
+        Category(id = "6", key="fast_food", name = "Fast Food"),
     )
     val categories: List<Category> = _categories
 
     private val _venues = mutableStateOf<List<Venue>?>(null)
     val venues: State<List<Venue>?> = _venues
 
-    fun fetchVenues() {
+    fun fetchVenues(category: String = "all") {
         viewModelScope.launch {
-            val result = venueRepository.fetchVenues()
+            val result = venueRepository.fetchVenues(category)
             if (result.isSuccess) {
                 _venues.value = result.getOrNull()
-                println("Fetched venues: ${_venues.value}")
+                println("Fetched venues for category $category: ${_venues.value}")
             } else {
                 val exception = result.exceptionOrNull()
                 eventChannel.send(SearchEvent.Error(exception?.message ?: "Unknown error"))

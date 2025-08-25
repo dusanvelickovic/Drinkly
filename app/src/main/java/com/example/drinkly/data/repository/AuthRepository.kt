@@ -1,6 +1,7 @@
 package com.example.drinkly.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
 
 class AuthRepository(
@@ -26,6 +27,10 @@ class AuthRepository(
 
     fun checkAuth(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
+    }
+
+    fun getAuthUser(): FirebaseUser? {
+        return FirebaseAuth.getInstance().currentUser
     }
 
     fun logout() {
