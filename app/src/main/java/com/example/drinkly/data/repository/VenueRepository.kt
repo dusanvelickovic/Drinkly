@@ -5,14 +5,14 @@ import com.example.drinkly.data.model.Venue
 import kotlinx.coroutines.tasks.await
 
 class VenueRepository(
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     // Fetch venues
     suspend fun fetchVenues(category: String = "all"): Result<List<Venue>> = try {
         val query = if (category == "all") {
-            db.collection("venues")
+            firestore.collection("venues")
         } else {
-            db.collection("venues").whereEqualTo("category", category)
+            firestore.collection("venues").whereEqualTo("category", category)
         }
 
         val snapshot = query.get().await()
