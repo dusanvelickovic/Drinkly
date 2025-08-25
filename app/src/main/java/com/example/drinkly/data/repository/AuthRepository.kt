@@ -54,12 +54,21 @@ class AuthRepository(
         }
     }
 
-    fun checkAuth(): Boolean {
-        return FirebaseAuth.getInstance().currentUser != null
+    suspend fun getAuthUser(): Result<User?> = try {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: throw Exception("User not authenticated")
+        val document = firestore.collection("users")
+            .document(uid)
+            .get()
+            .await()
+
+        val user = document.toObject(User::class.java)
+        Result.success(user)
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 
-    fun getAuthUser(): FirebaseUser? {
-        return FirebaseAuth.getInstance().currentUser
+    fun checkAuth(): Boolean {
+        return FirebaseAuth.getInstance().currentUser != null
     }
 
     fun logout() {

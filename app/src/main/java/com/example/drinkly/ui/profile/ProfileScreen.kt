@@ -17,6 +17,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,12 +31,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.drinkly.data.model.User
 
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
     onLogout: () -> Unit = { }
 ) {
+   var authUser by remember { mutableStateOf<User?>(null) }
+   LaunchedEffect(Unit) {
+       val result = authViewModel.getAuthUser()
+       authUser = result.getOrNull()
+       println(authUser)
+   }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,13 +58,7 @@ fun ProfileScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(onClick = { /* navigate back */ }) {
-                Icon(
-                    imageVector = Icons.Default.Person, // možeš zameniti sa back icon
-                    contentDescription = "Back"
-                )
-            }
-            Text(text = "Personal Info", fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
+            Text(text = "Profile", fontWeight = FontWeight.Medium, fontSize = 20.sp)
             TextButton(onClick = { /* edit profile */ }) {
                 Text(text = "EDIT", color = Color(0xFFFF6600)) // narandžasta boja
             }
@@ -78,7 +85,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
             ) {
-                Text("Vishal Khadok", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                authUser?.name?.let { Text(it, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
                 Text("I love fast food", color = Color.Gray, fontSize = 14.sp)
             }
         }
@@ -92,7 +99,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-
+                // Full name
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -110,12 +117,13 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("FULL NAME", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        Text("Vishal Khadok", fontSize = 14.sp)
+                        authUser?.name?.let { Text(it, fontSize = 14.sp) }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Email
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -133,12 +141,13 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("EMAIL", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        Text("hello@halallab.co", fontSize = 14.sp)
+                        authUser?.email?.let { Text(it, fontSize = 14.sp) }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Phone
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -156,7 +165,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("PHONE NUMBER", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        Text("408-841-0926", fontSize = 14.sp)
+                        authUser?.phone?.let { Text(it, fontSize = 14.sp) }
                     }
                 }
             }

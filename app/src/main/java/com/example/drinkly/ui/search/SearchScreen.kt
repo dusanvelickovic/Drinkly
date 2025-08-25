@@ -30,16 +30,6 @@ import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 
-data class Restaurant(
-    val id: String,
-    val name: String,
-    val categories: List<String>,
-    val rating: Double,
-    val deliveryTime: String,
-    val deliveryFee: String,
-    val imageUrl: String? = null
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -54,6 +44,7 @@ fun SearchScreen(
     }
 
     val venues by searchViewModel.venues
+    // Initial fetch of venues
     LaunchedEffect(Unit) {
         searchViewModel.fetchVenues()
     }
