@@ -14,6 +14,7 @@ mapsCompose = "4.3.3"
 places = "3.5.0"
 playServicesMaps = "19.0.0"
 timber = "5.0.1"
+uiText = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +37,7 @@ maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = 
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+androidx-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

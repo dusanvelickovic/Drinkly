@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Search
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,13 +61,13 @@ fun SearchScreen(
     var selectedCategory by remember { mutableStateOf("all") }
     // When selectedCategory changes, fetch venues for that category
     LaunchedEffect(selectedCategory) {
-        searchViewModel.fetchVenues(selectedCategory)
+        searchViewModel.searchVenues(category = selectedCategory, searchQuery = searchQuery)
     }
 
     val venues by searchViewModel.venues
     // Initial fetch of venues
     LaunchedEffect(Unit) {
-        searchViewModel.fetchVenues()
+        searchViewModel.searchVenues()
     }
 
     val categories = searchViewModel.categories
@@ -74,7 +77,7 @@ fun SearchScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(bottom = 10.dp)
     ) {
         // Greeting
@@ -116,6 +119,18 @@ fun SearchScreen(
                         tint = Color(0xFF636E72)
                     )
                 },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        // Pokreni pretragu sa trenutnom kategorijom
+                        searchViewModel.searchVenues(
+                            category = selectedCategory,
+                            searchQuery = searchQuery
+                        )
+                    }
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -137,15 +152,6 @@ fun SearchScreen(
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF2D3436)
                     )
-                    TextButton(
-                        onClick = { /* Handle See All */ }
-                    ) {
-                        Text(
-                            text = "See All",
-                            color = Color(0xFF6C5CE7),
-                            fontSize = 16.sp
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -177,15 +183,6 @@ fun SearchScreen(
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF2D3436)
                 )
-                TextButton(
-                    onClick = { /* Handle See All */ }
-                ) {
-                    Text(
-                        text = "See All",
-                        color = Color(0xFF6C5CE7),
-                        fontSize = 16.sp
-                    )
-                }
             }
         }
 

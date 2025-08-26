@@ -7,42 +7,41 @@ import kotlinx.coroutines.tasks.await
 class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
-    // Fetch venues
-    suspend fun fetchVenues(category: String = "all"): Result<List<Venue>> = try {
-        val query = if (category == "all") {
+    // Search venues
+    suspend fun searchVenues(
+        category: String = "all",
+        searchQuery: String = ""
+    ): Result<List<Venue>> = try {
+        val baseQuery = if (category == "all") {
             firestore.collection("venues")
         } else {
             firestore.collection("venues").whereEqualTo("category", category)
         }
 
-        val snapshot = query.get().await()
+        val snapshot = baseQuery.get().await()
         val venues = snapshot.documents.mapNotNull { document ->
             try {
                 val venue = document.toObject(Venue::class.java)
-                venue?.apply { id = document.id }
+                venue?.apply {
+                    id = document.id
+                }?.takeIf { venue ->
+                    // Filtriraj po search query ako postoji
+                    if (searchQuery.isBlank()) {
+                        true // Vrati sve ako nema pretrage
+                    } else {
+                        venue.name?.contains(searchQuery, ignoreCase = true) == true
+                    }
+                }
             } catch (e: Exception) {
                 println("Failed to convert document ${document.id}")
                 null
             }
         }
+
         Result.success(venues)
     } catch (e: Exception) {
-        println("Failed to fetch venues for category $category")
+        val action = if (searchQuery.isBlank()) "fetch" else "search"
+        println("Failed to $action venues for category '$category' with query '$searchQuery'")
         Result.failure(e)
     }
-
-    // Realtime updates (optional)
-//    fun listenVenues(): Flow<Result<List<Venue>>> = callbackFlow {
-//        val reg = db.collection("venues")
-//            .addSnapshotListener { snap, e ->
-//                when {
-//                    e != null -> trySend(Result.failure(e))
-//                    snap != null -> {
-//                        val list = snap.documents.mapNotNull { it.toObject(Venue::class.java) }
-//                        trySend(Result.success(list))
-//                    }
-//                }
-//            }
-//        awaitClose { reg.remove() }
-//    }
 }
