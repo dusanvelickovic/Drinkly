@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.drinkly.ui.theme.AppColorOrange
 
 @Composable
 fun RegisterScreen(
@@ -117,14 +118,14 @@ fun RegisterScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange,
                             ),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Phone Field
                     Column {
@@ -143,14 +144,14 @@ fun RegisterScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange,
                             ),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Email Field
                     Column {
@@ -169,14 +170,14 @@ fun RegisterScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange,
                             ),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Password Field
                     Column {
@@ -197,13 +198,13 @@ fun RegisterScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange,
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Sign up Button
                     Button(

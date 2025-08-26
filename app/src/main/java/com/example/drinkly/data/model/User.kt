@@ -8,13 +8,16 @@ data class User(
     var uid: String = "",
 
     @get:PropertyName("email") @set:PropertyName("email")
-    var email: String? = null,
+    var email: String,
 
     @get:PropertyName("name") @set:PropertyName("name")
     var name: String? = null,
 
     @get:PropertyName("phone") @set:PropertyName("phone")
     var phone: String? = null,
+
+    @get:PropertyName("bio") @set:PropertyName("bio")
+    var bio: String? = null,
 
     @get:PropertyName("created_at") @set:PropertyName("created_at")
     var created_at: Timestamp = Timestamp.now(),

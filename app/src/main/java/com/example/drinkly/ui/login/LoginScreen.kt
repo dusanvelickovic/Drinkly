@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.drinkly.ui.theme.AppColorOrange
 
 @Composable
 fun LoginScreen(
@@ -27,8 +28,8 @@ fun LoginScreen(
     navController: NavController,
     onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("dusan@gmail.com") }
+    var password by remember { mutableStateOf("password") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     val loginState by viewModel.loginState.collectAsState()
@@ -119,7 +120,7 @@ fun LoginScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange
                             ),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
@@ -147,13 +148,13 @@ fun LoginScreen(
                                 unfocusedContainerColor = Color(0xFFF5F5F5),
                                 focusedContainerColor = Color(0xFFF5F5F5),
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color(0xFF4FC3F7)
+                                focusedBorderColor = AppColorOrange
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Login Button
                     Button(
