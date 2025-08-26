@@ -16,9 +16,13 @@ class AuthViewModel(
         _isAuthenticated.value = repo.checkAuth()
     }
 
-   suspend fun getAuthUser(): Result<User?> {
-       return authRepository.getAuthUser()
-   }
+    suspend fun getAuthUser(): Result<User?> {
+        return authRepository.getAuthUser()
+    }
+
+    suspend fun updateUser(name: String, email: String, phone: String, bio: String): Result<Unit> {
+        return authRepository.updateUser(name, email, phone, bio)
+    }
 
     fun logout() {
         authRepository.logout()

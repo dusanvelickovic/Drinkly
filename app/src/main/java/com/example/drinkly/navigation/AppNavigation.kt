@@ -27,13 +27,14 @@ import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.example.drinkly.ui.profile.EditProfileScreen
 
 @Composable
 fun AppNavigation(
     authViewModel: AuthViewModel = viewModel ()
 ) {
-//     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
-    val isAuthenticated = true
+     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+//    val isAuthenticated = true
     val navController = rememberNavController()
 
     val items = listOf(
@@ -92,7 +93,7 @@ fun AppNavigation(
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = "search",
+            startDestination = "login",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") { HomeScreen() }
@@ -104,14 +105,27 @@ fun AppNavigation(
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }
-                        authViewModel.checkAuth(authViewModel.authRepository);
-                    }
+                        authViewModel.checkAuth(authViewModel.authRepository)
+                    },
+                    onOpenEditProfilePage = {
+                        navController.navigate("editProfile") {
+                            popUpTo("editProfile") { inclusive = false }
+                        }
+                    },
                 )
+            }
+            composable("editProfile") {
+                 EditProfileScreen(
+                     onBackClick = {
+                        navController.popBackStack()
+                     },
+                     authViewModel = viewModel<AuthViewModel>()
+                 )
             }
             composable("login") {
                 LoginScreen(
                     navController = navController,
-                    viewModel = viewModel<LoginViewModel>(),
+                    loginViewModel = viewModel<LoginViewModel>(),
                     onLoginSuccess = {
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true } // da se ne vraća nazad na login

@@ -24,7 +24,7 @@ import com.example.drinkly.ui.theme.AppColorOrange
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
+    loginViewModel: LoginViewModel = viewModel(),
     navController: NavController,
     onLoginSuccess: () -> Unit
 ) {
@@ -32,8 +32,8 @@ fun LoginScreen(
     var password by remember { mutableStateOf("password") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val loginState by viewModel.loginState.collectAsState()
-    val loginSuccess by viewModel.loginSuccess.collectAsState()
+    val loginState by loginViewModel.loginState.collectAsState()
+    val loginSuccess by loginViewModel.loginSuccess.collectAsState()
 
     // Handle login success
     if (loginSuccess) {
@@ -158,7 +158,7 @@ fun LoginScreen(
 
                     // Login Button
                     Button(
-                        onClick = { viewModel.login(email, password) },
+                        onClick = { loginViewModel.login(email, password) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),

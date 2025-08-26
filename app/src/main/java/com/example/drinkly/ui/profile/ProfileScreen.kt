@@ -27,19 +27,20 @@ import androidx.compose.ui.text.font.FontWeight
 import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.drinkly.data.model.User
 
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
-    onLogout: () -> Unit = { }
+    onLogout: () -> Unit = { },
+    onOpenEditProfilePage: () -> Unit = { },
 ) {
-   var authUser by remember { mutableStateOf<User?>(null) }
-   LaunchedEffect(Unit) {
-       val result = authViewModel.getAuthUser()
-       authUser = result.getOrNull()
-       println(authUser)
-   }
+    var authUser by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(Unit) {
+        authUser = (authViewModel.getAuthUser().getOrNull() ?: println("No authenticated user fetched")) as User?
+        println(authUser)
+    }
 
     Column(
         modifier = Modifier
@@ -55,8 +56,8 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Profile", fontWeight = FontWeight.Medium, fontSize = 20.sp)
-            TextButton(onClick = { /* edit profile */ }) {
-                Text(text = "EDIT", color = Color(0xFFFF6600)) // narandžasta boja
+            TextButton(onClick = { onOpenEditProfilePage() }) {
+                Text(text = "EDIT", color = Color(0xFFFF6600))
             }
         }
 
@@ -82,7 +83,7 @@ fun ProfileScreen(
                     .padding(16.dp),
             ) {
                 authUser?.name?.let { Text(it, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
-                Text("I love fast food", color = Color.Gray, fontSize = 14.sp)
+                authUser?.bio?.let { Text(it, color = Color.Gray, fontSize = 14.sp) }
             }
         }
 

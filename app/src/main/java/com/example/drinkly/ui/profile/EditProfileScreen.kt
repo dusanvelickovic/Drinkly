@@ -16,29 +16,41 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.drinkly.data.model.User
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfileScreen(
     onBackClick: () -> Unit = {},
     authViewModel: AuthViewModel,
 ) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+
     var authUser by remember { mutableStateOf<User?>(null) }
     LaunchedEffect(Unit) {
-        val result = authViewModel.getAuthUser()
-        authUser = result.getOrNull()
+        authUser = (authViewModel.getAuthUser().getOrNull() ?: println("No authenticated user fetched")) as User?
         println(authUser)
+
+        // Initialize form fields with current user data
+         name = authUser?.name ?: ""
+         email = authUser?.email ?: ""
+         phone = authUser?.phone ?: ""
+         bio = authUser?.bio ?: ""
     }
 
-    var name by remember { mutableStateOf(authUser?.name) }
-    var email by remember { mutableStateOf(authUser?.email) }
-    var phone by remember { mutableStateOf(authUser?.phone) }
-    var bio by remember { mutableStateOf(authUser?.bio) }
+    // Handle loading state
+    val coroutineScope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -122,9 +134,9 @@ fun EditProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Full Name
+            // Name
             ProfileTextField(
-                label = "FULL NAME",
+                label = "NAME",
                 value = name ?: "",
                 onValueChange = { name = it }
             )
@@ -151,7 +163,8 @@ fun EditProfileScreen(
                 value = bio ?: "",
                 onValueChange = { bio = it },
                 singleLine = false,
-                maxLines = 3
+                maxLines = 5,
+                height = 100.dp,
             )
         }
 
@@ -159,7 +172,19 @@ fun EditProfileScreen(
 
         // Save Button
         Button(
-            onClick = {},
+            onClick = {
+                coroutineScope.launch {
+                    isLoading = true
+                    val result = authViewModel.updateUser(name, email, phone, bio)
+                    isLoading = false
+
+                    if (!result.isSuccess) {
+                        // Handle error
+                        println("Update failed: ${result.exceptionOrNull()?.message}")
+                    }
+                }
+            },
+            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -168,12 +193,19 @@ fun EditProfileScreen(
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text(
-                text = "SAVE",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White
+                )
+            } else {
+                Text(
+                    text = "SAVE",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -185,7 +217,8 @@ fun ProfileTextField(
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true,
-    maxLines: Int = 1
+    maxLines: Int = 1,
+    height: Dp = 50.dp,
 ) {
     Column {
         Text(
@@ -199,7 +232,7 @@ fun ProfileTextField(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(height),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = AppColorGray,
                 focusedContainerColor = AppColorGray,
@@ -213,7 +246,7 @@ fun ProfileTextField(
             textStyle = TextStyle(
                 color = Color(0xFF666666),
                 fontSize = 16.sp
-            )
+            ),
         )
     }
 }

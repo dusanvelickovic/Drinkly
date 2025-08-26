@@ -28,6 +28,7 @@ class AuthRepository(
                 name = name,
                 email = email,
                 phone = phone,
+                bio = "Life's too short for bad drinks ✌\uFE0F\uFE0F\uD83C\uDF78",
                 created_at = Timestamp.now()
             )
 
@@ -69,6 +70,26 @@ class AuthRepository(
 
     fun checkAuth(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
+    }
+
+    suspend fun updateUser(name: String, email: String, phone: String, bio: String): Result<Unit> {
+        val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
+        val updates = mapOf(
+            "name" to name,
+            "email" to email,
+            "phone" to phone,
+            "bio" to bio
+        )
+
+        return try {
+            firestore.collection("users")
+                .document(currentUser.uid)
+                .update(updates)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     fun logout() {
