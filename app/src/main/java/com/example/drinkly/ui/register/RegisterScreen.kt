@@ -124,7 +124,7 @@ fun RegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Phone Field
                     Column {
@@ -150,7 +150,7 @@ fun RegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Email Field
                     Column {
@@ -176,7 +176,7 @@ fun RegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Password Field
                     Column {
@@ -203,7 +203,7 @@ fun RegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Sign up Button
                     Button(
@@ -239,7 +239,6 @@ fun RegisterScreen(
                         TextButton(
                             onClick = { navController.navigate("login") },
                             contentPadding = PaddingValues(0.dp),
-
                             ) {
                             Text(
                                 text = "LOGIN",

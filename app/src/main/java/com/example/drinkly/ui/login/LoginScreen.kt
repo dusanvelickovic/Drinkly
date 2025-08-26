@@ -30,7 +30,6 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var rememberMe by remember { mutableStateOf(false) }
 
     val loginState by viewModel.loginState.collectAsState()
     val loginSuccess by viewModel.loginSuccess.collectAsState()
@@ -152,38 +151,6 @@ fun LoginScreen(
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Remember Me & Forgot Password
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = rememberMe,
-                                onCheckedChange = { rememberMe = it }
-                            )
-                            Text(
-                                text = "Remember me",
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
-                        TextButton(
-                            onClick = { /* Handle forgot password */ }
-                        ) {
-                            Text(
-                                text = "Forgot Password",
-                                fontSize = 14.sp,
-                                color = Color(0xFFFF7043)
-                            )
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
