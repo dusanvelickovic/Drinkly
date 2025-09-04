@@ -5,12 +5,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drinkly.data.model.MenuItem
+import com.example.drinkly.data.model.Venue
+import com.example.drinkly.ui.components.VenueBottomSheet
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -20,16 +25,19 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
 ) {
     val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
+
+    // Lokacija i dozvole iz ViewModel-a
     val userLocation by homeViewModel.userLocation
     val hasLocationPermission by homeViewModel.hasLocationPermission
-//    val venues by homeViewModel.venues
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -37,11 +45,14 @@ fun HomeScreen(
     ) { granted ->
         homeViewModel.updateLocationPermissionGranted(granted)
         if (granted) {
-            homeViewModel.fetchUserLocation(context, fusedLocationClient)
+            homeViewModel.getUserLocation(context, fusedLocationClient)
         } else {
             println("User denied location permission")
         }
     }
+
+    // Venues iz ViewModel-a
+    val venues by homeViewModel.venues
 
     // Inicijalno podešavanje dozvola i lokacije
     LaunchedEffect(Unit) {
@@ -53,13 +64,12 @@ fun HomeScreen(
         homeViewModel.updateLocationPermissionGranted(granted)
 
         if (granted) {
-            homeViewModel.fetchUserLocation(context, fusedLocationClient)
+            homeViewModel.getUserLocation(context, fusedLocationClient)
         } else {
             permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        // Učitaj venues odmah
-//        homeViewModel.fetchVenues()
+        homeViewModel.fetchVenues()
     }
 
     // Postavi kameru kada se učita korisnikova lokacija
@@ -70,6 +80,7 @@ fun HomeScreen(
         }
     }
 
+    // Map settings - sakrij POI
     val mapStyleOptions = remember {
         MapStyleOptions(
             """
@@ -84,63 +95,101 @@ fun HomeScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            properties = MapProperties(
-                isMyLocationEnabled = hasLocationPermission && userLocation != null,
-                mapStyleOptions = mapStyleOptions
-            )
+    // States za bottom sheet
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+    val scope = rememberCoroutineScope()
+    var selectedVenue by remember { mutableStateOf<Venue?>(null) }
+    var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
+    var isLoadingMenu by remember { mutableStateOf(false) }
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Handle klik na marker
+    val onMarkerClick: (Venue) -> Unit = { venue ->
+        selectedVenue = venue
+        isLoadingMenu = true
+
+        scope.launch {
+            try {
+                // Učitaj menu items za selected venue
+                menuItems = homeViewModel.getMenuItemsForVenue(venue.id)
+                isLoadingMenu = false
+                showBottomSheet = true
+            } catch (e: Exception) {
+                isLoadingMenu = false
+                println("Greška pri učitavanju menu items: ${e.message}")
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Google Map
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
         ) {
-            // Marker za korisničku lokaciju
-            userLocation?.let { location ->
-                Marker(
-                    state = MarkerState(position = location),
-                    title = "Your Location",
-                    snippet = "You are here"
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(
+                    isMyLocationEnabled = hasLocationPermission && userLocation != null,
+                    mapStyleOptions = mapStyleOptions
+                )
+            ) {
+                // Markeri za venues
+                venues?.forEach { venue ->
+                    Marker(
+                        state = MarkerState(position = LatLng(
+                            venue.location.latitude,
+                            venue.location.longitude
+                        )),
+                        title = venue.name,
+                        snippet = venue.category,
+                        onClick = { marker ->
+                            // Pozovi funkciju za otvaranje bottom sheet-a
+                            onMarkerClick(venue)
+                            true // Vrati true da konzumiraš click event
+                        }
+                    )
+                }
+            }
+        }
+
+        // Modal Bottom Sheet
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                },
+                sheetState = bottomSheetState,
+                dragHandle = {
+                    // Custom drag handle
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(4.dp)
+                            .background(Color.Gray, androidx.compose.foundation.shape.RoundedCornerShape(2.dp))
+                    )
+                },
+            ) {
+                VenueBottomSheet(
+                    venue = selectedVenue,
+                    menuItems = menuItems,
+                    isLoadingMenu = isLoadingMenu,
+                    onMenuItemClick = { menuItem ->
+                        // Handle menu item click
+                        println("Clicked on menu item: ${menuItem.name}")
+                    },
+                    onCloseBottomSheet = {
+                        scope.launch {
+                            bottomSheetState.hide()
+                            showBottomSheet = false
+                        }
+                    }
                 )
             }
-
-            // Markeri za venues
-//            venues?.forEach { venue ->
-//                venue.location?.let { gp ->
-//                    // Proveri da li su koordinate validne
-//                    if (gp.latitude != 0.0 && gp.longitude != 0.0) {
-//                        val venuePosition = LatLng(gp.latitude, gp.longitude)
-//                        Marker(
-//                            state = MarkerState(position = venuePosition),
-//                            title = venue.name ?: "Venue",
-//                            snippet = venue.address ?: "No address",
-//                            // Možete dodati custom ikonu ako je potrebno
-//                            // icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-//                        )
-//                        println("Added marker for: ${venue.name} at ${gp.latitude}, ${gp.longitude}")
-//                    } else {
-//                        println("Invalid coordinates for venue: ${venue.name} (${gp.latitude}, ${gp.longitude})")
-//                    }
-//                } ?: run {
-//                    println("No location data for venue: ${venue.name}")
-//                }
-//            } ?: run {
-//                println("No venues to display")
-//            }
-
-            // Hardcore marker za testiranje
-            Marker(
-                state = MarkerState(position = LatLng(43.3209, 21.8958)),
-                title = "Test Venue",
-                snippet = "This is a test marker"
-            )
-            Marker(
-                state = MarkerState(position = LatLng(44.7890, 20.4500)),
-                title = "Another Venue",
-                snippet = "This is another test marker"
-            )
         }
     }
 }

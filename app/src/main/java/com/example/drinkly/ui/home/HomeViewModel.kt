@@ -7,7 +7,9 @@ import androidx.compose.runtime.State
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
+import com.example.drinkly.data.repository.MenuItemRepository
 import com.example.drinkly.data.repository.VenueRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
@@ -15,13 +17,11 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val venueRepository: VenueRepository = VenueRepository(),
+    private  val menuItemRepository: MenuItemRepository = MenuItemRepository(),
 ) : ViewModel() {
 
     private val _userLocation = mutableStateOf<LatLng?>(null)
     val userLocation: State<LatLng?> = _userLocation
-
-    private val _venues = mutableStateOf<List<Venue>?>(null)
-    val venues: State<List<Venue>?> = _venues
 
     private val _hasLocationPermission = mutableStateOf(false)
     val hasLocationPermission: State<Boolean> = _hasLocationPermission
@@ -30,7 +30,7 @@ class HomeViewModel(
         _hasLocationPermission.value = granted
     }
 
-    fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
+    fun getUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -54,15 +54,27 @@ class HomeViewModel(
         }
     }
 
+    private val _venues = mutableStateOf<List<Venue>?>(null)
+    val venues: State<List<Venue>?> = _venues
+
     fun fetchVenues() {
-//        viewModelScope.launch {
-//            val result = venueRepository.fetchVenues()
-//            result.onSuccess {
-//                _venues.value = it
-//                println("Loaded ${it.size} venues")
-//            }.onFailure {
-//                println("Venue load failed: ${it.message}")
-//            }
-//        }
+        viewModelScope.launch {
+            val result = venueRepository.searchVenues()
+            result.onSuccess {
+                _venues.value = it
+                println("Loaded ${it.size} venues")
+            }.onFailure {
+                println("Venue load failed: ${it.message}")
+            }
+        }
+    }
+
+    suspend fun getMenuItemsForVenue(venueId: String): List<MenuItem> {
+        return try {
+            menuItemRepository.getMenuItemsForVenue(venueId)
+        } catch (e: Exception) {
+            println("Error loading menu items: ${e.message}")
+            emptyList()
+        }
     }
 }

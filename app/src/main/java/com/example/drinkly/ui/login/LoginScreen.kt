@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.drinkly.ui.theme.AppColorDarkBlue
 import com.example.drinkly.ui.theme.AppColorOrange
 
 @Composable
@@ -61,7 +62,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Color(0xFF1E1E2E),
+                        AppColorDarkBlue,
                     )
                     .height(250.dp)
             ) {

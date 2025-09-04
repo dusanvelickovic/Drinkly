@@ -14,7 +14,7 @@ data class Venue(
     var address: String = "",
 
     @get:PropertyName("location") @set:PropertyName("location")
-    var location: GeoPoint? = null,
+    var location: GeoPoint,
 
     @get:PropertyName("category") @set:PropertyName("category")
     var category: String = "",
@@ -26,5 +26,7 @@ data class Venue(
     var imageUrl: String = "",
 ) {
     // Potreban prazan konstruktor za Firestore
-    constructor() : this("", "", "", null, "", 0.0)
+    constructor() : this("", "", "", GeoPoint(0.0,0.0), "", 0.0)
 }
+
+//TODO: Dodaj phone
