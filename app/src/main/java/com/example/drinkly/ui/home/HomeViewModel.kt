@@ -69,12 +69,17 @@ class HomeViewModel(
         }
     }
 
+    /**
+     * Ucitaj menu iteme za venueId
+     */
     suspend fun getMenuItemsForVenue(venueId: String): List<MenuItem> {
         return try {
-            menuItemRepository.getMenuItemsForVenue(venueId)
+            val result = menuItemRepository.getMenuItemsForVenue(venueId)
+            println("Loaded ${result.size} menu items for venue $venueId")
+            result
         } catch (e: Exception) {
             println("Error loading menu items: ${e.message}")
-            emptyList()
+            emptyList<MenuItem>()
         }
     }
 }

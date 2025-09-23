@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.components
 
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,7 +97,7 @@ private fun VenueHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(115.dp)
             .background(
                 AppColorDarkBlue,
                 RoundedCornerShape(bottomStart = 0.dp, bottomEnd = 0.dp)
@@ -105,56 +108,86 @@ private fun VenueHeader(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Top bar sa menu i profile
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                IconButton(onClick = onCloseBottomSheet) {
-//                    Icon(
-//                        Icons.Default.KeyboardArrowDown,
-//                        contentDescription = "Close",
-//                        tint = Color.White
-//                    )
-//                }
-//
-//
-//            }
-
-//            Spacer(modifier = Modifier.height(2.dp))
-
+            // Red sa slikom i imenom
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = venue.name,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(65.dp, 50.dp)
                         .background(Color.White.copy(alpha = 0.3f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    VenueAvatar(venue)
+                    Avatar(venue.imageUrl, venue.name)
                 }
 
+                Column (
+                    modifier = Modifier
+                        .fillMaxHeight(0.55f)
+                        .padding(start = 10.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    // Ime venue-a
+                    Text(
+                        text = venue.name,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // Ocena i broj reviewa
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = "Rating",
+                            tint = AppColorOrange,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text (
+                            text = "${"%.1f".format(venue.rating)} (${menuItemsCount} items)",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 4.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // Kontakt telefon
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Phone,
+                        contentDescription = "Rating",
+                        tint = AppColorOrange,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text (
+                        text = venue.phone,
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                // Lokacija
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = "Location",
@@ -163,21 +196,6 @@ private fun VenueHeader(
                     )
                     Text(
                         text = venue.address,
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 14.sp
-                    )
-                }
-
-                // Ocena i broj reviewa
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = "Rating",
-                        tint = AppColorOrange,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Text (
-                        text = "${"%.1f".format(venue.rating)} (${menuItemsCount} items)",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp,
                         modifier = Modifier.padding(start = 4.dp)
@@ -190,16 +208,15 @@ private fun VenueHeader(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-private fun VenueAvatar(venue: Venue) {
+private fun Avatar(imageUrl: String, description: String) {
     GlideImage(
-        model = venue.imageUrl,
-        contentDescription = venue.name,
+        model = imageUrl,
+        contentDescription = description,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp)),
         contentScale = ContentScale.Crop
     )
 }
-
 
 @Composable
 private fun LoadingMenuState() {
@@ -274,82 +291,69 @@ private fun MenuItemCard(
         // Image placeholder
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(70.dp)
                 .background(Color(0xFF9DB4C0), RoundedCornerShape(12.dp))
-        )
+        ) {
+            Avatar(menuItem.imageUrl, menuItem.name)
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
         // Item info
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceAround
         ) {
-            Text(
-                text = "#${menuItem.category}",
-                color = Color(0xFFFF8C42),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
             Text(
                 text = menuItem.name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = Color.Black
             )
             Text(
-                text = "ID: ${menuItem.hashCode().toString().takeLast(5)}",
+                text = menuItem.category.toString().replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase() else it.toString()
+                },
+                color = AppColorOrange,
                 fontSize = 12.sp,
-                color = Color.Gray
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 6.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${menuItem.currency}${menuItem.price}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            // Ocena i broj reviewa
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Star,
+                    contentDescription = "Rating",
+                    tint = AppColorOrange,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text (
+                    text= "3.5",
+                    color = AppColorOrange,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                Text (
+                    text = " (2 Reviews)",
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
         }
 
-        // Action buttons
+        // Cena
         Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.Top
         ) {
-            Button(
-                onClick = onDoneClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF8C42)
-                ),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.width(60.dp).height(32.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    text = "Done",
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-            }
-
-            OutlinedButton(
-                onClick = onCancelClick,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFFF8C42)
-                ),
-//                border = ButtonDefaults.outlinedButtonBorder.copy(
-//                    brush = null,
-//                    width = 1.dp,
-//                ),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.width(60.dp).height(32.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    text = "Cancel",
-                    fontSize = 12.sp,
-                    color = Color(0xFFFF8C42)
-                )
-            }
+            Text(
+                text = "${menuItem.price} ${menuItem.currency}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
         }
     }
 }

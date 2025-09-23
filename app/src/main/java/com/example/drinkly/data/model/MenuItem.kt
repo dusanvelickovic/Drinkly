@@ -13,13 +13,16 @@ data class MenuItem(
     var category: String = "",
 
     @get:PropertyName("price") @set:PropertyName("price")
-    var price: String = "",
+    var price: Double,
 
     @get:PropertyName("currency") @set:PropertyName("currency")
     var currency: String = "",
 
     @get:PropertyName("available") @set:PropertyName("available")
     var available: Boolean,
+
+    @get:PropertyName("image_url") @set:PropertyName("image_url")
+    var imageUrl: String = "",
 ) {
-    constructor() : this("", "", "", "", "", false)
+    constructor() : this("", "", "", 0.0, "", false, "")
 }
