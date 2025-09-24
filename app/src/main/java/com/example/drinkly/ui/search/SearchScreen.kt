@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -32,6 +33,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.drinkly.data.model.User
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.components.CategoryChip
+import com.example.drinkly.ui.components.VenueCategoryChip
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
@@ -243,32 +245,29 @@ fun VenueCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp, 8.dp)
             ) {
-                // Restaurant Name
-                Text(
-                    text = venue.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF2D3436)
-                )
+                Box {
+                    // Restaurant Name
+                    Text(
+                        text = venue.name,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF2D3436)
+                    )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    // Tip restorana
+                    VenueCategoryChip(venue)
+                }
 
-                // Categories
-                //            Text(
-                //                text = restaurant.categories.joinToString(" - "),
-                //                fontSize = 14.sp,
-                //                color = Color(0xFF636E72)
-                //            )
-
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 // Rating, Delivery Fee, and Time
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    maxItemsInEachRow = 3
                 ) {
                     // Rating
                     Row(
@@ -278,7 +277,7 @@ fun VenueCard(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Rating",
-                            tint = Color(0xFFF39C12),
+                            tint = AppColorOrange,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
@@ -289,7 +288,7 @@ fun VenueCard(
                         )
                     }
 
-                    // Delivery Fee
+                    // Telefon
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -297,34 +296,32 @@ fun VenueCard(
                         Icon(
                             imageVector = Icons.Default.Call,
                             contentDescription = "Delivery",
-                            tint = Color(0xFF00B894),
+                            tint = AppColorOrange,
                             modifier = Modifier.size(16.dp)
                         )
-                        //                    Text(
-                        //                        text = restaurant.deliveryFee,
-                        //                        fontSize = 14.sp,
-                        //                        fontWeight = FontWeight.Medium,
-                        //                        color = Color(0xFF2D3436)
-                        //                    )
+                        Text(
+                            text = venue.phone,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
 
-                    // Delivery Time
+                    // Adresa
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Call,
+                            imageVector = Icons.Default.LocationOn,
                             contentDescription = "Time",
-                            tint = Color(0xFF636E72),
+                            tint = AppColorOrange,
                             modifier = Modifier.size(16.dp)
                         )
-                        //                    Text(
-                        //                        text = restaurant.deliveryTime,
-                        //                        fontSize = 14.sp,
-                        //                        fontWeight = FontWeight.Medium,
-                        //                        color = Color(0xFF2D3436)
-                        //                    )
+                        Text(
+                            text = venue.address,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
                 }
             }

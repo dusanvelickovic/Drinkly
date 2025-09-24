@@ -167,21 +167,23 @@ private fun VenueHeader(
                     }
                 }
 
-                 Box(
-                     modifier = Modifier.fillMaxWidth(),
-                     contentAlignment = Alignment.CenterEnd,
-                 ) {
-                    // Kategorija
-                    Text(
-                        text = venue.getDisplayCategory(),
-                        color = AppColorOrange,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
-                            .padding(horizontal = 6.dp)
-                    )
-                }
+//                 Box(
+//                     modifier = Modifier.fillMaxWidth(),
+//                     contentAlignment = Alignment.CenterEnd,
+//                 ) {
+//                    // Kategorija
+//                    Text(
+//                        text = venue.getDisplayCategory(),
+//                        color = AppColorOrange,
+//                        fontSize = 12.sp,
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
+//                            .padding(horizontal = 6.dp)
+//                    )
+//                }
+
+                VenueCategoryChip(venue)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -279,7 +281,7 @@ private fun EmptyMenuState() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "No menu items available",
+            text = "No menu items available.",
             color = Color.Gray,
             fontSize = 16.sp
         )
