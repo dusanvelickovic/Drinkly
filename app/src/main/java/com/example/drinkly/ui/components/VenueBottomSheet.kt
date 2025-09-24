@@ -1,6 +1,5 @@
 package com.example.drinkly.ui.components
 
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -18,18 +17,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.theme.AppColorDarkBlue
 import com.example.drinkly.ui.theme.AppColorOrange
-
 
 @Composable
 fun VenueBottomSheet(
@@ -37,8 +35,16 @@ fun VenueBottomSheet(
     menuItems: List<MenuItem>,
     isLoadingMenu: Boolean,
     onMenuItemClick: (MenuItem) -> Unit,
-    onCloseBottomSheet: () -> Unit
+    onCloseBottomSheet: () -> Unit,
+    onCategoryChange: (MenuItemCategory) -> Unit
 ) {
+    var selectedCategory by remember { mutableStateOf(MenuItemCategory.ALL) }
+
+    // Kada se promeni kategorija, filtriraj menu items
+    LaunchedEffect(selectedCategory) {
+        onCategoryChange(selectedCategory)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -55,19 +61,26 @@ fun VenueBottomSheet(
             )
         }
 
+        CategorySelector(
+            selectedCategory = selectedCategory,
+            onCategorySelected = {
+                selectedCategory = it
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // Menu items sekcija
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(16.dp)
+                .padding(16.dp, 4.dp, 16.dp, 0.dp)
         ) {
             // Menu items count
             Text(
-                text = "${menuItems.filter { it.available }.size} Available Items",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 16.dp)
+                text = "Total ${menuItems.filter { it.available }.size} items",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
             )
 
             when {
@@ -152,6 +165,22 @@ private fun VenueHeader(
                             modifier = Modifier.padding(start = 4.dp)
                         )
                     }
+                }
+
+                 Box(
+                     modifier = Modifier.fillMaxWidth(),
+                     contentAlignment = Alignment.CenterEnd,
+                 ) {
+                    // Kategorija
+                    Text(
+                        text = venue.getDisplayCategory(),
+                        color = AppColorOrange,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 6.dp)
+                    )
                 }
             }
 
@@ -263,7 +292,7 @@ private fun MenuItemsList(
     onMenuItemClick: (MenuItem) -> Unit
 ) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.height(400.dp) // Ograniči visinu za bottom sheet
     ) {
         items(menuItems) { menuItem ->
@@ -310,6 +339,8 @@ private fun MenuItemCard(
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Black
             )
+
+            // Kategorija
             Text(
                 text = menuItem.category.toString().replaceFirstChar {
                     if (it.isLowerCase()) it.titlecase() else it.toString()
@@ -321,6 +352,7 @@ private fun MenuItemCard(
                     .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
                     .padding(horizontal = 6.dp)
             )
+
             // Ocena i broj reviewa
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -349,7 +381,7 @@ private fun MenuItemCard(
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "${menuItem.price} ${menuItem.currency}",
+                text = menuItem.getPriceFormatted(),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Black

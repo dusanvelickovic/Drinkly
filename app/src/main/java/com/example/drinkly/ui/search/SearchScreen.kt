@@ -31,6 +31,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.drinkly.data.model.User
 import com.example.drinkly.data.model.Venue
+import com.example.drinkly.ui.components.CategoryChip
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
@@ -193,49 +194,6 @@ fun SearchScreen(
             VenueCard(
                 venue = venue,
                 onClick = { /* Handle venue click */ }
-            )
-        }
-    }
-}
-
-@Composable
-fun CategoryChip(
-    category: Category,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                if (isSelected) AppColorOrange else Color(0xFFFFFFFF)
-            )
-            .border(
-                width = 1.dp,
-                color = if (isSelected) AppColorOrange else Color(0xFFE0E0E0),
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-//            Box(
-//                modifier = Modifier
-//                    .size(20.dp)
-//                    .background(
-//                        if (isSelected) Color(0xFF95A5A6) else Color(0xFF7F8C8D),
-//                        CircleShape
-//                    )
-//            )
-            Text(
-                text = category.name,
-                color = if (isSelected) Color.White else Color.Black,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
             )
         }
     }

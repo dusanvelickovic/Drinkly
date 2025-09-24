@@ -1,5 +1,6 @@
 package com.example.drinkly.data.model
 
+import android.annotation.SuppressLint
 import com.google.firebase.firestore.PropertyName
 
 data class MenuItem(
@@ -25,4 +26,9 @@ data class MenuItem(
     var imageUrl: String = "",
 ) {
     constructor() : this("", "", "", 0.0, "", false, "")
+
+    @SuppressLint("DefaultLocale")
+    fun getPriceFormatted(): String {
+        return String.format("%d %s", price.toInt(), currency)
+    }
 }

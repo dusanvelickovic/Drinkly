@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.components.VenueBottomSheet
@@ -123,6 +124,28 @@ fun HomeScreen(
         }
     }
 
+    val onMenuItemCategoryClick: (MenuItemCategory) -> Unit = { category ->
+        if (selectedVenue != null) {
+            isLoadingMenu = true
+            scope.launch {
+                try {
+
+                    // Ako je klik na All, učitaj sve iteme
+//                    if (category == "all") {
+//                        menuItems = homeViewModel.getMenuItemsForVenue(selectedVenue!!.id)
+//                    } else {
+                        menuItems = homeViewModel.getMenuItemsForVenueByCategory(selectedVenue!!.id, category)
+//                    }
+
+                    isLoadingMenu = false
+                } catch (e: Exception) {
+                    isLoadingMenu = false
+                    println("Greška pri učitavanju menu items po kategoriji: ${e.message}")
+                }
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Google Map
         Column(
@@ -182,6 +205,7 @@ fun HomeScreen(
                         // Handle menu item click
                         println("Clicked on menu item: ${menuItem.name}")
                     },
+                    onCategoryChange = { category -> onMenuItemCategoryClick(category)},
                     onCloseBottomSheet = {
                         scope.launch {
                             bottomSheetState.hide()

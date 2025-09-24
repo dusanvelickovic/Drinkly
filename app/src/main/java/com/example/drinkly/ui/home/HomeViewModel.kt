@@ -7,6 +7,7 @@ import androidx.compose.runtime.State
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.data.repository.MenuItemRepository
@@ -79,6 +80,20 @@ class HomeViewModel(
             result
         } catch (e: Exception) {
             println("Error loading menu items: ${e.message}")
+            emptyList<MenuItem>()
+        }
+    }
+
+    /**
+     * Ucitaj menu iteme za venueId i kategoriju
+     */
+    suspend fun getMenuItemsForVenueByCategory(venueId: String, category: MenuItemCategory): List<MenuItem> {
+        return try {
+            val result = menuItemRepository.getMenuItemsForVenueByCategory(venueId, category)
+            println("Loaded ${result.size} menu items for venue $venueId and category $category")
+            result
+        } catch (e: Exception) {
+            println("Error loading menu items by category: ${e.message}")
             emptyList<MenuItem>()
         }
     }

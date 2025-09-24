@@ -30,4 +30,17 @@ data class Venue(
 ) {
     // Potreban prazan konstruktor za Firestore
     constructor() : this("", "", "", "", GeoPoint(0.0,0.0), "", 0.0)
+
+    // Mapira kategorije na prikazno ime
+    fun getDisplayCategory(): String {
+        return when (category.lowercase()) {
+            "restaurant" -> "Restaurant"
+            "caffe" -> "Caffe"
+            "bar" -> "Bar"
+            "pub" -> "Pub"
+            "kafana" -> "Kafana"
+            "fast_food" -> "Fast Food"
+            else -> "Other"
+        }
+    }
 }
