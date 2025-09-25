@@ -44,6 +44,7 @@ import java.util.Calendar
 fun SearchScreen(
     searchViewModel: SearchViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel (),
+    onVenueCardClick: (venueId: String) -> Unit
 ) {
     var authUser by remember { mutableStateOf<User?>(null) }
     LaunchedEffect(Unit) {
@@ -195,7 +196,7 @@ fun SearchScreen(
         ) { venue ->
             VenueCard(
                 venue = venue,
-                onClick = { /* Handle venue click */ }
+                onClick = { onVenueCardClick(venue.id) }
             )
         }
     }

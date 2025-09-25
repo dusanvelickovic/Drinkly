@@ -3,6 +3,7 @@ package com.example.drinkly.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.drinkly.data.model.Venue
 import kotlinx.coroutines.tasks.await
+import kotlin.text.get
 
 class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -42,6 +43,25 @@ class VenueRepository(
     } catch (e: Exception) {
         val action = if (searchQuery.isBlank()) "fetch" else "search"
         println("Failed to $action venues for category '$category' with query '$searchQuery'")
+        Result.failure(e)
+    }
+
+    // Get venue by ID
+    suspend fun getVenueById(
+        id: String
+    ): Result<Venue?> = try {
+        val document = firestore.collection("venues").document(id).get().await()
+
+        if (document.exists()) {
+            val venue = document.toObject(Venue::class.java)?.apply {
+                this.id = document.id
+            }
+            Result.success(venue)
+        } else {
+            Result.success(null)
+        }
+    } catch (e: Exception) {
+        println("Failed to fetch venue with id '$id': ${e.message}")
         Result.failure(e)
     }
 }

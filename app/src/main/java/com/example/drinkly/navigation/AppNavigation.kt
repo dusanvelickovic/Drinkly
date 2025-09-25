@@ -27,7 +27,10 @@ import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.drinkly.ui.profile.EditProfileScreen
+import com.example.drinkly.ui.venue.VenueScreen
 
 @Composable
 fun AppNavigation(
@@ -96,8 +99,16 @@ fun AppNavigation(
             startDestination = "login",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { HomeScreen() }
-            composable("search") { SearchScreen() }
+            composable("home") { HomeScreen(
+                navController = navController,
+            ) }
+            composable("search") {
+                SearchScreen(
+                    onVenueCardClick = {
+                        venueId -> navController.navigate("venueScreen/$venueId")
+                    }
+                )
+            }
             composable("profile") {
                 ProfileScreen(
                     authViewModel = viewModel<AuthViewModel>(),
@@ -144,6 +155,16 @@ fun AppNavigation(
                         }
                         authViewModel.checkAuth(authViewModel.authRepository);
                     }
+                )
+            }
+            composable(
+                "venueScreen/{venueId}",
+                arguments = listOf(navArgument("venueId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val venueId = backStackEntry.arguments?.getString("venueId")
+                VenueScreen(
+                    venueId = venueId,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }

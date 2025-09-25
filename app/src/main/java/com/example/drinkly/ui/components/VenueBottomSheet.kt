@@ -1,6 +1,8 @@
 package com.example.drinkly.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,7 +38,8 @@ fun VenueBottomSheet(
     isLoadingMenu: Boolean,
     onMenuItemClick: (MenuItem) -> Unit,
     onCloseBottomSheet: () -> Unit,
-    onCategoryChange: (MenuItemCategory) -> Unit
+    onCategoryChange: (MenuItemCategory) -> Unit,
+    onVenueClick: (venue: Venue) -> Unit,
 ) {
     var selectedCategory by remember { mutableStateOf(MenuItemCategory.ALL) }
 
@@ -57,7 +60,8 @@ fun VenueBottomSheet(
             VenueHeader(
                 venue = v,
                 menuItemsCount = menuItems.filter { it.available }.size,
-                onCloseBottomSheet = onCloseBottomSheet
+                onCloseBottomSheet = onCloseBottomSheet,
+                onVenueClick = onVenueClick,
             )
         }
 
@@ -105,11 +109,18 @@ fun VenueBottomSheet(
 private fun VenueHeader(
     venue: Venue,
     menuItemsCount: Int,
-    onCloseBottomSheet: () -> Unit
+    onCloseBottomSheet: () -> Unit,
+    onVenueClick: (venue: Venue) -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = {
+                    onVenueClick(venue)
+                }
+            )
             .height(115.dp)
             .background(
                 AppColorDarkBlue,
@@ -166,22 +177,6 @@ private fun VenueHeader(
                         )
                     }
                 }
-
-//                 Box(
-//                     modifier = Modifier.fillMaxWidth(),
-//                     contentAlignment = Alignment.CenterEnd,
-//                 ) {
-//                    // Kategorija
-//                    Text(
-//                        text = venue.getDisplayCategory(),
-//                        color = AppColorOrange,
-//                        fontSize = 12.sp,
-//                        fontWeight = FontWeight.Medium,
-//                        modifier = Modifier
-//                            .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))
-//                            .padding(horizontal = 6.dp)
-//                    )
-//                }
 
                 VenueCategoryChip(venue)
             }

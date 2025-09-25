@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
@@ -32,6 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
+    navController: NavController,
 ) {
     val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
@@ -211,6 +213,9 @@ fun HomeScreen(
                             bottomSheetState.hide()
                             showBottomSheet = false
                         }
+                    },
+                    onVenueClick = {
+                        navController.navigate("venueScreen/${selectedVenue?.id}")
                     }
                 )
             }
