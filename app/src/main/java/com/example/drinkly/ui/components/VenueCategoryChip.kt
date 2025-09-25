@@ -28,7 +28,7 @@ fun VenueCategoryChip(
         Text(
             text = venue.getDisplayCategory(),
             color = AppColorOrange,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier
                 .background(Color(0xFFFFE4D3), RoundedCornerShape(10.dp))

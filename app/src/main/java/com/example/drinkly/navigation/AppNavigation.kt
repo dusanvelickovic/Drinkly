@@ -164,7 +164,7 @@ fun AppNavigation(
                 val venueId = backStackEntry.arguments?.getString("venueId")
                 VenueScreen(
                     venueId = venueId,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
                 )
             }
         }

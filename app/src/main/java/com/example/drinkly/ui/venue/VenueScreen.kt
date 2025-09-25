@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,14 +24,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drinkly.data.enum.MenuItemCategory
+import com.example.drinkly.data.model.MenuItem
+import com.example.drinkly.ui.components.CategorySelector
+import com.example.drinkly.ui.components.LoadingState
 import com.example.drinkly.ui.components.VenueCategoryChip
 import com.example.drinkly.ui.theme.AppColorOrange
-
-data class MenuItem(
-    val name: String,
-    val category: String,
-    val price: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,23 +38,23 @@ fun VenueScreen(
     venueViewModel: VenueViewModel = viewModel(),
     onBackClick: () -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf("Burger") }
+    val isLading = venueViewModel.isLoading.collectAsState().value
 
     val venue = venueViewModel.venue.collectAsState()
 
-    // On mounted, load venue details (mocked here)
+    // Prati izabrani venue i ucitaj podatke
     LaunchedEffect(venueId) {
         venueViewModel.getVenueById(venueId ?: "1")
     }
 
-    val categories = listOf("Burger", "Sandwich", "Pizza", "Sanwi")
-
-    val menuItems = listOf(
-        MenuItem("Burger Ferguson", "Spicy Restaurant", "$40"),
-        MenuItem("Rockin' Burgers", "Cafeteria/Intro", "$40"),
-        MenuItem("Classic Burger", "Spicy Restaurant", "$35"),
-        MenuItem("Veggie Delight", "Cafeteria/Intro", "$38")
-    )
+    // Prati izabranu kategoriju i ucitaj iteme za tu kategoriju
+    var selectedCategory by remember { mutableStateOf(MenuItemCategory.FOOD) }
+    val menuItems = venueViewModel.menuItems.collectAsState().value
+    LaunchedEffect(venueId, selectedCategory) {
+        venueId?.let {
+            venueViewModel.getMenuItemsForVenueByCategoryAndUpdate(it, selectedCategory)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -96,6 +95,7 @@ fun VenueScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Slika
             item {
                 // Restaurant Image Placeholder
                 Box(
@@ -107,6 +107,7 @@ fun VenueScreen(
                 )
             }
 
+            // Ime i opis
             item {
                 // Restaurant Info
                 Column {
@@ -208,25 +209,33 @@ fun VenueScreen(
 
             item {
                 // Category Tabs
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            category = category,
-                            isSelected = category == selectedCategory,
-                            onCategorySelected = { selectedCategory = it }
-                        )
-                    }
-                }
+//                LazyRow(
+//                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+//                ) {
+//                    items(categories) { category ->
+//                        CategoryChip(
+//                            category = category,
+//                            isSelected = category == selectedCategory,
+//                            onCategorySelected = { selectedCategory = it }
+//                        )
+//                    }
+
+                    CategorySelector(
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = {
+                            selectedCategory = it
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+//                }
             }
 
             item {
                 // Section Header
                 Text(
-                    text = "Burger (10)",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "Total ${menuItems.size} items",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
             }
@@ -261,31 +270,6 @@ fun VenueScreen(
         }
     }
 }
-
-@Composable
-fun CategoryChip(
-    category: String,
-    isSelected: Boolean,
-    onCategorySelected: (String) -> Unit
-) {
-    Button(
-        onClick = { onCategorySelected(category) },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFFFF9500) else Color.White,
-            contentColor = if (isSelected) Color.White else Color.Black
-        ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-        modifier = Modifier.height(36.dp)
-    ) {
-        Text(
-            text = category,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
 @Composable
 fun MenuItemCard(
     menuItem: MenuItem,
@@ -323,7 +307,7 @@ fun MenuItemCard(
 
             // Category
             Text(
-                text = menuItem.category,
+                text = menuItem.description,
                 fontSize = 12.sp,
                 color = Color.Gray
             )
@@ -337,24 +321,11 @@ fun MenuItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = menuItem.price,
+                    text = menuItem.getPriceFormatted(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-
-                FloatingActionButton(
-                    onClick = { },
-                    modifier = Modifier.size(28.dp),
-                    containerColor = Color(0xFFFF9500),
-                    contentColor = Color.White
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
             }
         }
     }

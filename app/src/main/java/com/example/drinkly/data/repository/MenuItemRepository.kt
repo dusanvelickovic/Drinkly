@@ -43,14 +43,9 @@ class MenuItemRepository @Inject constructor(
                 .document(venueId)
                 .collection("menu_items")
                 .whereEqualTo("available", true)
+                .whereEqualTo("category", category.getKey())
 
-            val finalQuery = if (category != MenuItemCategory.ALL) {
-                query.whereEqualTo("category", category.getKey())
-            } else {
-                query
-            }
-
-            val snapshot = finalQuery.get().await()
+            val snapshot = query.get().await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.toObject<MenuItem>()

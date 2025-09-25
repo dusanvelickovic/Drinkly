@@ -41,7 +41,7 @@ fun VenueBottomSheet(
     onCategoryChange: (MenuItemCategory) -> Unit,
     onVenueClick: (venue: Venue) -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf(MenuItemCategory.ALL) }
+    var selectedCategory by remember { mutableStateOf(MenuItemCategory.FOOD) }
 
     // Kada se promeni kategorija, filtriraj menu items
     LaunchedEffect(selectedCategory) {
@@ -296,7 +296,6 @@ private fun MenuItemsList(
             MenuItemCard(
                 menuItem = menuItem,
                 onDoneClick = { onMenuItemClick(menuItem) },
-                onCancelClick = { /* Handle cancel */ }
             )
         }
     }
@@ -306,7 +305,6 @@ private fun MenuItemsList(
 private fun MenuItemCard(
     menuItem: MenuItem,
     onDoneClick: () -> Unit,
-    onCancelClick: () -> Unit
 ) {
     Row(
         modifier = Modifier

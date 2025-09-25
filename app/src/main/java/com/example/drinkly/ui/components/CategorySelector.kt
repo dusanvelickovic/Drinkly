@@ -90,7 +90,7 @@ private fun CategoryItem(
             Text(
                 text = text,
                 color = if (isSelected) Color(0xFFFF6B35) else Color.Black,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                 modifier = Modifier.padding(0.dp, 4.dp)
             )
