@@ -1,6 +1,7 @@
 package com.example.drinkly.ui.venue
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -169,13 +170,18 @@ fun VenueScreen(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = "Rating",
                                 tint = AppColorOrange,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp).clickable(true, onClick = {
+                                    onOpenReviewScreen(venueId)
+                                })
                             )
                             Text(
                                 text = venue.value?.rating.toString(),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF2D3436)
+                                color = Color(0xFF2D3436),
+                                modifier = Modifier.clickable {
+                                    onOpenReviewScreen(venueId)
+                                }
                             )
                         }
 
@@ -296,7 +302,7 @@ fun MenuItemCard(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp)

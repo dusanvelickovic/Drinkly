@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.venue_review
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
@@ -23,17 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drinkly.data.model.Review
 import com.example.drinkly.ui.register.VenueReviewViewModel
+import com.example.drinkly.ui.theme.AppColorBg
+import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorOrange
-import com.example.drinkly.viewmodel.AuthViewModel
-
-data class Review(
-    val id: Int,
-    val date: String,
-    val title: String,
-    val rating: Int,
-    val comment: String
-)
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,12 +37,7 @@ fun VenueReviewScreen(
     onBackClick: () -> Unit = { },
     venueReviewViewModel: VenueReviewViewModel = viewModel(),
 ) {
-    var showReviewForm by remember { mutableStateOf(false) }
-    var newReviewRating by remember { mutableStateOf(5) }
-    var newReviewTitle by remember { mutableStateOf("") }
-    var newReviewComment by remember { mutableStateOf("") }
-
-    val reviews2 = venueReviewViewModel.reviews.collectAsState().value
+    val reviews = venueReviewViewModel.reviews.collectAsState().value
 
     LaunchedEffect(venueId) {
         venueId?.let {
@@ -55,61 +45,34 @@ fun VenueReviewScreen(
         }
     }
 
-    val reviews = remember {
-        listOf(
-            Review(
-                id = 1,
-                date = "20/12/2020",
-                title = "Great Food and Service",
-                rating = 5,
-                comment = "This Food so tasty & delicious. Breakfast so fast Delivered in my place. Chef is very friendly. I'm really like chef for Home Food Order. Thanks."
-            ),
-            Review(
-                id = 2,
-                date = "20/12/2020",
-                title = "Awesome and Nice",
-                rating = 4,
-                comment = "This Food so tasty & delicious. Breakfast so fast Delivered in my place."
-            ),
-            Review(
-                id = 3,
-                date = "20/12/2020",
-                title = "Awesome and Nice",
-                rating = 4,
-                comment = "This Food so tasty & delicious."
-            ),
-            Review(
-                id = 4,
-                date = "20/12/2020",
-                title = "Awesome and Nice",
-                rating = 4,
-                comment = "This Food so tasty & delicious. Breakfast so fast Delivered in my place."
-            ),
-            Review(
-                id = 5,
-                date = "20/12/2020",
-                title = "Awesome and Nice",
-                rating = 4,
-                comment = "This Food so tasty & delicious."
-            )
-        )
-    }
+    // State za prikaz forme za dodavanje recenzije
+    var showReviewForm by remember { mutableStateOf(false) }
+    var newReviewRating by remember { mutableStateOf(5) }
+    var newReviewTitle by remember { mutableStateOf("") }
+    var newReviewComment by remember { mutableStateOf("") }
 
-    fun handleSubmitReview() {
-        // Handle review submission here
-        println("New review: Title: $newReviewTitle, Rating: $newReviewRating, Comment: $newReviewComment")
-
-        // Reset form
+    fun resetFormAndClose() {
         newReviewTitle = ""
         newReviewComment = ""
         newReviewRating = 5
         showReviewForm = false
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
+    fun handleSubmitReview() {
+        venueId?.let {
+            coroutineScope.launch {
+                venueReviewViewModel.storeVenueReview(it, newReviewTitle, newReviewComment, newReviewRating)
+                resetFormAndClose()
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(AppColorBg)
     ) {
         // Top Bar
         TopAppBar(
@@ -151,7 +114,7 @@ fun VenueReviewScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = AppColorOrange
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
                     ) {
                         Text(
                             text = "Write a Review",
@@ -171,15 +134,15 @@ fun VenueReviewScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
                                 text = "Leave a Review",
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.Black
                             )
@@ -199,7 +162,7 @@ fun VenueReviewScreen(
                                         Icon(
                                             imageVector = if (index < newReviewRating) Icons.Filled.Star else Icons.Outlined.Star,
                                             contentDescription = "Star ${index + 1}",
-                                            tint = if (index < newReviewRating) Color(0xFFFF9500) else Color.Gray,
+                                            tint = if (index < newReviewRating) AppColorOrange else Color.LightGray,
                                             modifier = Modifier
                                                 .size(24.dp)
                                                 .clickable { newReviewRating = index + 1 }
@@ -224,9 +187,11 @@ fun VenueReviewScreen(
                                     placeholder = { Text("Give your review a title") },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFFF9500),
-                                        cursorColor = Color(0xFFFF9500)
-                                    )
+                                        focusedBorderColor = AppColorBorder,
+                                        cursorColor = AppColorBorder,
+                                        unfocusedBorderColor = AppColorBorder,
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
                                 )
                             }
 
@@ -248,9 +213,11 @@ fun VenueReviewScreen(
                                         .fillMaxWidth()
                                         .height(120.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFFF9500),
-                                        cursorColor = Color(0xFFFF9500)
-                                    )
+                                        focusedBorderColor = AppColorBorder,
+                                        cursorColor = AppColorBorder,
+                                        unfocusedBorderColor = AppColorBorder,
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
                                 )
                             }
 
@@ -263,7 +230,12 @@ fun VenueReviewScreen(
                                     onClick = { showReviewForm = false },
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color.Gray
+                                        contentColor = Color.DarkGray,
+                                        containerColor = Color.White,
+                                    ),
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = AppColorBorder
                                     )
                                 ) {
                                     Text("Cancel")
@@ -273,7 +245,7 @@ fun VenueReviewScreen(
                                     onClick = { handleSubmitReview() },
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFFF9500)
+                                        containerColor = AppColorOrange
                                     )
                                 ) {
                                     Row(
@@ -308,7 +280,7 @@ fun ReviewCard(review: Review) {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -331,7 +303,7 @@ fun ReviewCard(review: Review) {
 
                     Column {
                         Text(
-                            text = review.date,
+                            text = (review.user["name"]?.toString() ?: "") + " - " + review.getDateFormatted(),
                             fontSize = 12.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -358,16 +330,6 @@ fun ReviewCard(review: Review) {
                         }
                     }
                 }
-
-                // More options
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More options",
-                    tint = Color.Gray,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable { }
-                )
             }
 
             // Review comment
