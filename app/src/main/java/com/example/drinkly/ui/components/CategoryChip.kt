@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.drinkly.ui.search.Category
+import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorOrange
 
 @Composable
@@ -34,7 +35,7 @@ fun CategoryChip(
             )
             .border(
                 width = 1.dp,
-                color = if (isSelected) AppColorOrange else Color(0xFFE0E0E0),
+                color = if (isSelected) AppColorOrange else AppColorBorder,
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable { onClick() }

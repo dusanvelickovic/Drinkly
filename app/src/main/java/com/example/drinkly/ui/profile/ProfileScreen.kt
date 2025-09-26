@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.drinkly.data.model.User
+import com.example.drinkly.ui.theme.AppColorBg
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
@@ -45,135 +48,146 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
+            .background(AppColorBg)
     ) {
-
-        // Header: Back button + title + Edit
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = "Profile", fontWeight = FontWeight.Medium, fontSize = 20.sp)
-            TextButton(onClick = { onOpenEditProfilePage() }) {
-                Text(text = "EDIT", color = Color(0xFFFF6600))
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Profilna slika + ime + opis
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFFCCB3)) // pastelna boja kao placeholder
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            ) {
-                authUser?.name?.let { Text(it, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
-                authUser?.bio?.let { Text(it, color = Color.Gray, fontSize = 14.sp) }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Card sa detaljima
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF6F8FA)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Full name
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.White, shape = CircleShape)
-                            .clip(CircleShape)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Full Name",
-                            tint = Color(0xFFFF6600)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("FULL NAME", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        authUser?.name?.let { Text(it, fontSize = 14.sp) }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Email
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.White, shape = CircleShape)
-                            .clip(CircleShape)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Email,
-                            contentDescription = "Email",
-                            tint = Color(0xFF5C6BC0)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("EMAIL", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        authUser?.email?.let { Text(it, fontSize = 14.sp) }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Phone
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.White, shape = CircleShape)
-                            .clip(CircleShape)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Phone,
-                            contentDescription = "Phone",
-                            tint = Color(0xFF4CAF50)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text("PHONE NUMBER", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                        authUser?.phone?.let { Text(it, fontSize = 14.sp) }
-                    }
-                }
-            }
-        }
-        LogOutButton(
-            onClick = {
-                authViewModel.logout()
-                onLogout()
+        // Top Bar
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Profile",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
             },
-            modifier = Modifier.fillMaxWidth(),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.White
+            ),
+            actions = {
+                TextButton(onClick = { onOpenEditProfilePage() }) {
+                    Text(text = "EDIT", color = Color(0xFFFF6600))
+                }
+            }
         )
+
+       Column(
+           modifier = Modifier.padding(16.dp)
+       ) {
+
+
+            // Profilna slika + ime + opis
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFFCCB3)) // pastelna boja kao placeholder
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    authUser?.name?.let { Text(it, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
+                    authUser?.bio?.let { Text(it, color = Color.Gray, fontSize = 14.sp) }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Card sa detaljima
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Full name
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White, shape = CircleShape)
+                                .clip(CircleShape)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Full Name",
+                                tint = Color(0xFFFF6600)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("FULL NAME", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            authUser?.name?.let { Text(it, fontSize = 14.sp) }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Email
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White, shape = CircleShape)
+                                .clip(CircleShape)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Email,
+                                contentDescription = "Email",
+                                tint = Color(0xFF5C6BC0)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("EMAIL", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            authUser?.email?.let { Text(it, fontSize = 14.sp) }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Phone
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White, shape = CircleShape)
+                                .clip(CircleShape)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Phone,
+                                contentDescription = "Phone",
+                                tint = Color(0xFF4CAF50)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("PHONE NUMBER", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            authUser?.phone?.let { Text(it, fontSize = 14.sp) }
+                        }
+                    }
+                }
+            }
+            LogOutButton(
+                onClick = {
+                    authViewModel.logout()
+                    onLogout()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+       }
     }
 }
 
@@ -192,9 +206,9 @@ fun LogOutButton(
                 .clickable { onClick() },
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF6F8FA)
+                containerColor = Color.White
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
         ) {
             Row(
                 modifier = Modifier

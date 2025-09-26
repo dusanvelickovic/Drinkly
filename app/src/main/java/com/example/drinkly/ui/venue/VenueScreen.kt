@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -20,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,8 +30,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.ui.components.CategorySelector
+import com.example.drinkly.ui.components.Image
 import com.example.drinkly.ui.components.LoadingState
 import com.example.drinkly.ui.components.VenueCategoryChip
+import com.example.drinkly.ui.theme.AppColorBg
+import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,8 +43,9 @@ fun VenueScreen(
     venueId: String?,
     venueViewModel: VenueViewModel = viewModel(),
     onBackClick: () -> Unit,
+    onOpenReviewScreen: (venueId: String?) -> Unit
 ) {
-    val isLading = venueViewModel.isLoading.collectAsState().value
+    val isLoading = venueViewModel.isLoading.collectAsState().value
 
     val venue = venueViewModel.venue.collectAsState()
 
@@ -59,7 +66,7 @@ fun VenueScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(AppColorBg)
     ) {
         // Top Bar
         TopAppBar(
@@ -75,7 +82,7 @@ fun VenueScreen(
             },
             navigationIcon = {
                 IconButton(onClick = {
-                    // Handle back navigation
+                    // Idi na predhodni ekran
                     onBackClick()
                 }) {
                     Icon(
@@ -87,7 +94,18 @@ fun VenueScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.White
-            )
+            ),
+            actions = {
+                IconButton(onClick = {
+                    onOpenReviewScreen(venueId)
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = "Review",
+                        tint = AppColorOrange
+                    )
+                }
+            }
         )
 
         LazyColumn(
@@ -96,16 +114,15 @@ fun VenueScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Slika
-            item {
-                // Restaurant Image Placeholder
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF9DB2BF))
-                )
-            }
+           item {
+               Image(
+                   venue.value?.imageUrl,
+                   venue.value?.name,
+                   190.dp,
+                   8.dp,
+                   8.dp
+               )
+           }
 
             // Ime i opis
             item {
@@ -284,13 +301,13 @@ fun MenuItemCard(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            // Item Image Placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF9DB2BF))
+            // Menu item slika
+            Image(
+                menuItem.imageUrl,
+                menuItem.name,
+                80.dp,
+                8.dp,
+                8.dp,
             )
 
             Spacer(modifier = Modifier.height(8.dp))

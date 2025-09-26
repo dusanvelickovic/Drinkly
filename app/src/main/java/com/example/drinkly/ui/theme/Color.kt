@@ -17,3 +17,7 @@ var AppColorOrange = Color(0xFFFE7622)
 var AppColorGray = Color(0xFFF6F8FA)
 
 var AppColorDarkBlue = Color(0xFF1E1E2E)
+
+var AppColorBg = Color(0xFFF6F8FA)
+
+var AppColorBorder = Color(0xFFE0E0E0)

@@ -30,6 +30,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.drinkly.ui.profile.EditProfileScreen
+import com.example.drinkly.ui.theme.AppColorGray
+import com.example.drinkly.ui.venue_review.VenueReviewScreen
 import com.example.drinkly.ui.venue.VenueScreen
 
 @Composable
@@ -58,7 +60,7 @@ fun AppNavigation(
                             clip = false
                         )
                         .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
-                    containerColor = Color(0xFFF6F8FA)
+                    containerColor = Color.White
                 ) {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
@@ -157,12 +159,26 @@ fun AppNavigation(
                     }
                 )
             }
+            // Venue Screen
             composable(
                 "venueScreen/{venueId}",
                 arguments = listOf(navArgument("venueId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val venueId = backStackEntry.arguments?.getString("venueId")
                 VenueScreen(
+                    venueId = venueId,
+                    onBackClick = { navController.popBackStack() },
+                    onOpenReviewScreen = { id -> navController.navigate("venueReviews/$id") }
+                )
+            }
+            // Venue Screen Reviews
+            composable (
+                "venueReviews/{venueId}",
+                arguments = listOf(navArgument("venueId") { type = NavType.StringType })
+            ) {
+                backStackEntry ->
+                val venueId = backStackEntry.arguments?.getString("venueId")
+                VenueReviewScreen(
                     venueId = venueId,
                     onBackClick = { navController.popBackStack() },
                 )

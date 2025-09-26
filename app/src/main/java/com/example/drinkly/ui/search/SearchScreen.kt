@@ -34,6 +34,8 @@ import com.example.drinkly.data.model.User
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.components.CategoryChip
 import com.example.drinkly.ui.components.VenueCategoryChip
+import com.example.drinkly.ui.theme.AppColorBg
+import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
@@ -76,128 +78,142 @@ fun SearchScreen(
 
     val categories = searchViewModel.categories
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp),
-        contentPadding = PaddingValues(bottom = 10.dp)
+            .background(AppColorBg)
     ) {
-        // Greeting
-       item {
-           Row(
-               verticalAlignment = Alignment.CenterVertically,
-               horizontalArrangement = Arrangement.spacedBy(8.dp)
-           ) {
-               Text(
-                   text = "Hello ${authUser?.first_name ?: "User"},",
-                   fontSize = 20.sp,
-                   fontWeight = FontWeight.Normal,
-                   color = Color(0xFF2D3436),
-               )
-               Text(
-                   text = greeting,
-                   fontSize = 20.sp,
-                   fontWeight = FontWeight.Medium,
-                   color = Color(0xFF2D3436),
-               )
-           }
-       }
+        // Top Bar
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Hello ${authUser?.first_name ?: "User"}, $greeting",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.White
+            ),
+        )
 
-        // Search Bar
-        item {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = {
-                    Text(
-                        text = "Search restaurants, pubs, cafes...",
-                        color = Color(0xFF636E72)
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = Color(0xFF636E72)
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Search
-                ),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        // Pokreni pretragu sa trenutnom kategorijom
-                        searchViewModel.searchVenues(
-                            category = selectedCategory,
-                            searchQuery = searchQuery
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColorBg)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+            contentPadding = PaddingValues(bottom = 10.dp)
+        ) {
+            // Search Bar
+            item {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = {
+                        Text(
+                            text = "Search restaurants, pubs, cafes...",
+                            color = Color(0xFF636E72)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFF636E72)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            searchViewModel.searchVenues(
+                                category = selectedCategory,
+                                searchQuery = searchQuery
+                            )
+                        }
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .border(
+                            width = 1.dp,
+                            color = AppColorBorder,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    shape = RoundedCornerShape(12.dp),
+                )
+            }
+
+            // Categories Section
+            item {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Categories",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF2D3436)
                         )
                     }
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp)
-            )
-        }
 
-        // Categories Section
-        item {
-            Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(categories) { category ->
+                            CategoryChip(
+                                category = category,
+                                isSelected = selectedCategory == category.key,
+                                onClick = { selectedCategory = category.key }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Venue section
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Categories",
+                        text = "Venues",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF2D3436)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            category = category,
-                            isSelected = selectedCategory == category.key,
-                            onClick = { selectedCategory = category.key }
-                        )
-                    }
-                }
             }
-        }
 
-        // Venue section
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Venues",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF2D3436)
+            items(
+                items = venues.orEmpty(),
+                key = { it.id ?: it.hashCode().toString() }
+            ) { venue ->
+                VenueCard(
+                    venue = venue,
+                    onClick = { onVenueCardClick(venue.id) }
                 )
             }
-        }
-
-        items(
-            items = venues.orEmpty(),
-            key = { it.id ?: it.hashCode().toString() }
-        ) { venue ->
-            VenueCard(
-                venue = venue,
-                onClick = { onVenueCardClick(venue.id) }
-            )
         }
     }
 }
@@ -215,9 +231,7 @@ fun VenueCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
