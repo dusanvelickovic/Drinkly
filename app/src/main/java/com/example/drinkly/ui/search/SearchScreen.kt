@@ -205,14 +205,51 @@ fun SearchScreen(
                 }
             }
 
-            items(
-                items = venues.orEmpty(),
-                key = { it.id ?: it.hashCode().toString() }
-            ) { venue ->
-                VenueCard(
-                    venue = venue,
-                    onClick = { onVenueCardClick(venue.id) }
-                )
+//            items(
+//                items = venues.orEmpty(),
+//                key = { it.id ?: it.hashCode().toString() }
+//            ) { venue ->
+//                VenueCard(
+//                    venue = venue,
+//                    onClick = { onVenueCardClick(venue.id) }
+//                )
+//            }
+            if (venues.isNullOrEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "No venues found",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF636E72)
+                            )
+                            Text(
+                                text = "Try adjusting your search or category filter.",
+                                fontSize = 14.sp,
+                                color = Color(0xFF636E72)
+                            )
+                        }
+                    }
+                }
+            } else {
+                items(
+                    items = venues.orEmpty(),
+                    key = { it.id ?: it.hashCode().toString() }
+                ) { venue ->
+                    VenueCard(
+                        venue = venue,
+                        onClick = { onVenueCardClick(venue.id) }
+                    )
+                }
             }
         }
     }
