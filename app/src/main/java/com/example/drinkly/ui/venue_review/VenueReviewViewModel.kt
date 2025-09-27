@@ -1,4 +1,4 @@
-package com.example.drinkly.ui.register
+package com.example.drinkly.ui.venue
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,9 +39,20 @@ class VenueReviewViewModel(
     }
 
     /**
+     * Postavi recenziju za dati venueId
+     */
+    fun submitReview(venueId: String, title: String, comment: String, rating: Int) {
+        viewModelScope.launch {
+            storeVenueReview(venueId, title, comment, rating)
+            recalculateVenueRating(venueId)
+            incrementUserReviewsPosted()
+        }
+    }
+
+    /**
      * Sačuvaj recenziju za dati venueId
      */
-    suspend fun storeVenueReview(venueId: String, title: String, comment: String, rating: Int) {
+    private suspend fun storeVenueReview(venueId: String, title: String, comment: String, rating: Int) {
         val review = Review(
             userUid = AuthRepository().getAuthUser().getOrThrow()?.uid ?: "",
             title = title,
@@ -60,14 +71,10 @@ class VenueReviewViewModel(
     /**
      * Rekalkuliši ocenu za dati venueId
      */
-    fun recalculateVenueRating(venueId: String) {
-         viewModelScope.launch {
-             val result = venueRepository.recalculateVenueRating(venueId)
-             if (result.isSuccess) {
-                 println("Successfully recalculated rating for venue $venueId")
-             } else {
-                 println("Failed to recalculate rating for venue $venueId: ${result.exceptionOrNull()?.message}")
-             }
-         }
-     }
+    private suspend fun recalculateVenueRating(venueId: String) = venueRepository.recalculateVenueRating(venueId)
+
+    /**
+     * Inkrementiraj broj postavljenih recenzija za korisnika
+     */
+    private suspend fun incrementUserReviewsPosted() = venueReviewRepository.incrementUserReviewsPosted()
 }

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drinkly.data.model.Review
-import com.example.drinkly.ui.register.VenueReviewViewModel
+import com.example.drinkly.ui.venue.VenueReviewViewModel
 import com.example.drinkly.ui.theme.AppColorBg
 import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorOrange
@@ -63,8 +63,7 @@ fun VenueReviewScreen(
     fun handleSubmitReview() {
         venueId?.let {
             coroutineScope.launch {
-                venueReviewViewModel.storeVenueReview(it, newReviewTitle, newReviewComment, newReviewRating)
-                venueReviewViewModel.recalculateVenueRating(it)
+                venueReviewViewModel.submitReview(it, newReviewTitle, newReviewComment, newReviewRating)
                 resetFormAndClose()
             }
         }

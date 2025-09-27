@@ -29,7 +29,8 @@ class AuthRepository(
                 email = email,
                 phone = phone,
                 bio = "Life's too short for bad drinks ✌\uFE0F\uFE0F\uD83C\uDF78",
-                created_at = Timestamp.now()
+                reviewsPosted = 0,
+                createdAt = Timestamp.now()
             )
 
             // 3. Sačuvaj dodatne podatke u Firestore

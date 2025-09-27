@@ -25,12 +25,13 @@ import com.example.drinkly.ui.register.RegisterViewModel
 import com.example.drinkly.viewmodel.AuthViewModel
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.drinkly.ui.leaderboard.LeaderboardScreen
 import com.example.drinkly.ui.profile.EditProfileScreen
-import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.venue_review.VenueReviewScreen
 import com.example.drinkly.ui.venue.VenueScreen
 
@@ -38,14 +39,14 @@ import com.example.drinkly.ui.venue.VenueScreen
 fun AppNavigation(
     authViewModel: AuthViewModel = viewModel ()
 ) {
-     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
-//    val isAuthenticated = true
+    val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
     val navController = rememberNavController()
 
     val items = listOf(
         BottomNavItem("home", "Home", Icons.Default.Home),
         BottomNavItem("search", "Search", Icons.Default.Search),
-        BottomNavItem("profile", "Profile", Icons.Default.Person)
+        BottomNavItem("profile", "Profile", Icons.Default.Person),
+        BottomNavItem("leaderboard", "Leaderboard", Icons.Default.Menu)
     )
 
     Scaffold(
@@ -126,6 +127,9 @@ fun AppNavigation(
                         }
                     },
                 )
+            }
+            composable("leaderboard") {
+                LeaderboardScreen()
             }
             composable("editProfile") {
                  EditProfileScreen(

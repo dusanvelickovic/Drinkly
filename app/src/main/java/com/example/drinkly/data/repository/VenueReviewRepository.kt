@@ -1,6 +1,7 @@
 package com.example.drinkly.data.repository
 
 import com.example.drinkly.data.model.Review
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -72,6 +73,30 @@ class VenueReviewRepository(
             Result.success(null)
         } catch (e: Exception) {
             println("Failed to store review for venue '$venueId': ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Inkrementiraj broj recenzija za autentifikovanog korisnika
+     */
+    suspend fun incrementUserReviewsPosted(): Result<Void?> {
+        val userUid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: return Result.failure(Exception("User not authenticated"))
+
+        return try {
+            val userRef = firestore.collection("users").document(userUid)
+
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentCount = snapshot.getLong("reviews_posted") ?: 0
+                transaction.update(userRef, "reviews_posted", currentCount + 1)
+            }.await()
+
+            println("Successfully incremented reviewsPosted for user: $userUid")
+            Result.success(null)
+        } catch (e: Exception) {
+            println("Failed to increment reviewsPosted for user '$userUid': ${e.message}")
             Result.failure(e)
         }
     }

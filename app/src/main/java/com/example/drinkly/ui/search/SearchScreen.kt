@@ -87,7 +87,7 @@ fun SearchScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "Hello ${authUser?.first_name ?: "User"}, $greeting",
+                    text = "Hello ${authUser?.firstName ?: "User"}, $greeting",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.Black
