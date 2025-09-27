@@ -1,5 +1,8 @@
 package com.example.drinkly.ui.venue
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,11 +36,33 @@ import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.ui.components.CategorySelector
 import com.example.drinkly.ui.components.Image
-import com.example.drinkly.ui.components.LoadingState
 import com.example.drinkly.ui.components.VenueCategoryChip
 import com.example.drinkly.ui.theme.AppColorBg
-import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
+import androidx.core.net.toUri
+
+@Composable
+fun ClickablePhoneNumber(phoneNumber: String) {
+    val context = LocalContext.current
+
+    Text(
+        text = phoneNumber,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = Color(0xFF2D3436),
+        modifier = Modifier.clickable {
+            openPhoneDialer(context, phoneNumber)
+        }
+    )
+}
+
+// Function to open phone dialer
+fun openPhoneDialer(context: Context, phoneNumber: String) {
+    val intent = Intent(Intent.ACTION_DIAL).apply {
+        data = "tel:$phoneNumber".toUri()
+    }
+    context.startActivity(intent)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -198,11 +224,7 @@ fun VenueScreen(
                             )
 
                             venue.value?.phone?.let {
-                                Text(
-                                    text = it,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                )
+                                ClickablePhoneNumber(phoneNumber = it)
                             }
                         }
 
