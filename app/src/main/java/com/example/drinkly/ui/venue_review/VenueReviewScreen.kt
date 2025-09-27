@@ -37,11 +37,10 @@ fun VenueReviewScreen(
     onBackClick: () -> Unit = { },
     venueReviewViewModel: VenueReviewViewModel = viewModel(),
 ) {
-    val reviews = venueReviewViewModel.reviews.collectAsState().value
-
+    val reviews by venueReviewViewModel.reviewsFlow.collectAsState(initial = Result.success(emptyList()))
     LaunchedEffect(venueId) {
         venueId?.let {
-            venueReviewViewModel.getReviewsForVenue(it)
+            venueReviewViewModel.observeReviewsForVenue(it)
         }
     }
 
@@ -266,9 +265,12 @@ fun VenueReviewScreen(
                 }
             }
 
-            // Reviews List
-            items(reviews) { review ->
-                ReviewCard(review = review)
+            // Prikaz recenzije
+            reviews.onSuccess { reviews ->
+                // Reviews List
+                items(reviews) { review ->
+                    ReviewCard(review = review)
+                }
             }
         }
     }

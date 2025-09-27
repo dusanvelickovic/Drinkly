@@ -4,6 +4,10 @@ import com.example.drinkly.data.model.Review
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 
 class VenueReviewRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -11,43 +15,50 @@ class VenueReviewRepository(
     /**
      * Dobavi recenzije za dati venueId iz firestore
      */
-    suspend fun getReviewsForVenue(venueId: String): Result<List<Review>> {
-        return try {
-            val snapshot = firestore.collection("venues")
-                .document(venueId)
-                .collection("reviews")
-                .get()
-                .await()
+    fun observeReviewsForVenue(venueId: String): Flow<Result<List<Review>>> = callbackFlow {
+        val registration = firestore.collection("venues")
+            .document(venueId)
+            .collection("reviews")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Result.failure(error))
+                    return@addSnapshotListener
+                }
 
-            val reviews = snapshot.documents.mapNotNull { document ->
-                try {
-                    val review = document.toObject(Review::class.java)
-                    review?.apply {
-                        id = document.id
+                if (snapshot != null) {
+                    // pokreni coroutine za obradu user podataka
+                    launch {
+                        val reviews = snapshot.documents.mapNotNull { document ->
+                            try {
+                                val review = document.toObject(Review::class.java)
+                                review?.apply {
+                                    id = document.id
 
-                        // Fetch user data based on userUid and add as dynamic attribute
-                        val userUid = this.userUid
+                                    // asinhrono fetch user data
+                                    val userUid = this.userUid
+                                    val userSnapshot = firestore.collection("users")
+                                        .document(userUid)
+                                        .get()
+                                        .await()
 
-                        val userSnapshot = firestore.collection("users").document(userUid).get().await()
-                        val user = userSnapshot.data
-
-                        if (user != null) {
-                            this.user = user
+                                    user = if (userSnapshot.exists()) {
+                                        userSnapshot.data ?: emptyMap()
+                                    } else {
+                                        emptyMap()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                println("Failed to convert ${document.id}: ${e.message}")
+                                null
+                            }
                         }
 
-                        println("Successfully converted document ${document.id} to Review.")
+                        trySend(Result.success(reviews))
                     }
-                } catch (e: Exception) {
-                    println("Failed to convert document ${document.id} to Review. Error: ${e.message}")
-                    null
                 }
             }
 
-            Result.success(reviews)
-        } catch (e: Exception) {
-            println("Failed to fetch reviews for venue '$venueId': ${e.message}")
-            Result.failure(e)
-        }
+        awaitClose { registration.remove() }
     }
 
     /**
