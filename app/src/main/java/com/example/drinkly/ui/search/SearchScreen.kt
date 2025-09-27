@@ -333,7 +333,7 @@ fun VenueCard(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = venue.rating.toString(),
+                            text = venue.getRatingFormatted(),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF2D3436)

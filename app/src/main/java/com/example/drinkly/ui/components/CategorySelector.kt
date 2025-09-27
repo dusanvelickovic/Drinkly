@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +35,8 @@ fun CategorySelector(
 
     Column(modifier = modifier) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.fillMaxWidth().background(Color.White),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             categories.forEach { category ->
                 CategoryItem(

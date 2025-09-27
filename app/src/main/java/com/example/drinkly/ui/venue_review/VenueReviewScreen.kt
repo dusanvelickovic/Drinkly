@@ -64,6 +64,7 @@ fun VenueReviewScreen(
         venueId?.let {
             coroutineScope.launch {
                 venueReviewViewModel.storeVenueReview(it, newReviewTitle, newReviewComment, newReviewRating)
+                venueReviewViewModel.recalculateVenueRating(it)
                 resetFormAndClose()
             }
         }

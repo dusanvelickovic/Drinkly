@@ -4,13 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drinkly.data.model.Review
 import com.example.drinkly.data.repository.AuthRepository
+import com.example.drinkly.data.repository.VenueRepository
 import com.example.drinkly.data.repository.VenueReviewRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class VenueReviewViewModel(
-    private val venueReviewRepository: VenueReviewRepository = VenueReviewRepository()
+    private val venueReviewRepository: VenueReviewRepository = VenueReviewRepository(),
+    private val venueRepository: VenueRepository = VenueRepository()
 ) : ViewModel() {
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews
@@ -54,4 +56,18 @@ class VenueReviewViewModel(
             println("Failed to store review for venue $venueId: ${result.exceptionOrNull()?.message}")
         }
     }
+
+    /**
+     * Rekalkuliši ocenu za dati venueId
+     */
+    fun recalculateVenueRating(venueId: String) {
+         viewModelScope.launch {
+             val result = venueRepository.recalculateVenueRating(venueId)
+             if (result.isSuccess) {
+                 println("Successfully recalculated rating for venue $venueId")
+             } else {
+                 println("Failed to recalculate rating for venue $venueId: ${result.exceptionOrNull()?.message}")
+             }
+         }
+     }
 }

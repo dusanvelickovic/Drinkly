@@ -200,15 +200,18 @@ fun VenueScreen(
                                     onOpenReviewScreen(venueId)
                                 })
                             )
-                            Text(
-                                text = venue.value?.rating.toString(),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF2D3436),
-                                modifier = Modifier.clickable {
-                                    onOpenReviewScreen(venueId)
-                                }
-                            )
+
+                            venue.value?.getRatingFormatted()?.let {
+                                Text(
+                                    text = it,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF2D3436),
+                                    modifier = Modifier.clickable {
+                                        onOpenReviewScreen(venueId)
+                                    }
+                                )
+                            }
                         }
 
                         // Telefon

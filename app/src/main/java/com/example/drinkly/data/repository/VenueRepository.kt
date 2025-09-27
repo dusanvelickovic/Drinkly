@@ -4,11 +4,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.example.drinkly.data.model.Venue
 import kotlinx.coroutines.tasks.await
 import kotlin.text.get
+import kotlin.text.toDouble
+import kotlin.text.toLong
 
 class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
-    // Search venues
+    /**
+     * Pretrazi venue po kategoriji i/ili imenu
+     */
     suspend fun searchVenues(
         category: String = "all",
         searchQuery: String = ""
@@ -46,7 +50,9 @@ class VenueRepository(
         Result.failure(e)
     }
 
-    // Get venue by ID
+    /**
+     * Dobavi venue po id
+     */
     suspend fun getVenueById(
         id: String
     ): Result<Venue?> = try {
@@ -62,6 +68,30 @@ class VenueRepository(
         }
     } catch (e: Exception) {
         println("Failed to fetch venue with id '$id': ${e.message}")
+        Result.failure(e)
+    }
+
+    /**
+     * Rekalkuliši prosečnu ocenu za dati venueId na osnovu svih recenzija
+     */
+    suspend fun recalculateVenueRating(venueId: String): Result<Void?> = try {
+        val venueRef = firestore.collection("venues").document(venueId)
+        val reviewsSnapshot = venueRef.collection("reviews").get().await()
+        val totalReviews = reviewsSnapshot.size()
+        val totalRating = reviewsSnapshot.documents.sumOf { it.getLong("rating") ?: 0L }
+
+        val updatedReviewCount = totalReviews.toLong()
+        val updatedRating = if (updatedReviewCount > 0) {
+            totalRating.toDouble() / updatedReviewCount
+        } else {
+            0.0
+        }
+
+        venueRef.update("rating", updatedRating).await()
+        println("Successfully recalculated average rating for venue $venueId")
+        Result.success(null)
+    } catch (e: Exception) {
+        println("Failed to recalculate average rating for venue $venueId: ${e.message}")
         Result.failure(e)
     }
 }

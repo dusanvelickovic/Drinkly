@@ -46,4 +46,9 @@ data class Venue(
             else -> "Other"
         }
     }
+
+    // Formatira rating na dve decimale
+    fun getRatingFormatted(): String {
+        return String.format("%.2f", rating)
+    }
 }
