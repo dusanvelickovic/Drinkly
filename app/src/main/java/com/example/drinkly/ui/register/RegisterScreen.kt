@@ -2,8 +2,10 @@ package com.example.drinkly.ui.register
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,7 +44,8 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .fillMaxHeight()
-            .background(Color(0xFFF6F8FA)),
+            .background(Color(0xFFF6F8FA))
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -127,32 +130,6 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Phone Field
-                    Column {
-                        Text(
-                            text = "PHONE",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        OutlinedTextField(
-                            value = phone,
-                            onValueChange = { phone = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedContainerColor = Color(0xFFF5F5F5),
-                                focusedContainerColor = Color(0xFFF5F5F5),
-                                unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = AppColorOrange,
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
                     // Email Field
                     Column {
                         Text(
@@ -174,6 +151,32 @@ fun RegisterScreen(
                             ),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Phone Field
+                    Column {
+                        Text(
+                            text = "PHONE",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        OutlinedTextField(
+                            value = phone,
+                            onValueChange = { phone = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedContainerColor = Color(0xFFF5F5F5),
+                                focusedContainerColor = Color(0xFFF5F5F5),
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedBorderColor = AppColorOrange,
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                         )
                     }
 
