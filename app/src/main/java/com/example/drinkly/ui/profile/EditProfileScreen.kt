@@ -2,9 +2,11 @@ package com.example.drinkly.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -58,6 +60,7 @@ fun EditProfileScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
         TopAppBar(
@@ -90,8 +93,6 @@ fun EditProfileScreen(
                 containerColor = Color.White
             ),
         )
-
-        Spacer(modifier = Modifier.height(32.dp))
 
         // Profile Image
         Box(
@@ -167,47 +168,47 @@ fun EditProfileScreen(
                 maxLines = 5,
                 height = 100.dp,
             )
-        }
 
-        Spacer(modifier = Modifier.weight(1f))
+            // Save Button
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        val result = authViewModel.updateUser(name, email, phone, bio)
+                        isLoading = false
 
-        // Save Button
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    isLoading = true
-                    val result = authViewModel.updateUser(name, email, phone, bio)
-                    isLoading = false
-
-                    if (!result.isSuccess) {
-                        // Handle error
-                        println("Update failed: ${result.exceptionOrNull()?.message}")
+                        if (!result.isSuccess) {
+                            // Handle error
+                            println("Update failed: ${result.exceptionOrNull()?.message}")
+                        }
                     }
+                },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text(
+                        text = "SAVE",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
                 }
-            },
-            enabled = !isLoading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFF6B35)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White
-                )
-            } else {
-                Text(
-                    text = "SAVE",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
             }
         }
+
+
     }
 }
 

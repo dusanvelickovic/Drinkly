@@ -73,8 +73,6 @@ fun ProfileScreen(
        Column(
            modifier = Modifier.padding(16.dp)
        ) {
-
-
             // Profilna slika + ime + opis
             Row(
                 modifier = Modifier.fillMaxWidth(),
