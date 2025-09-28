@@ -2,6 +2,7 @@ package com.example.drinkly.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ fun Image(
     imageUrl: String?,
     description: String?,
     height: Dp,
+    width: Dp,
     topRounded: Dp,
     bottomRounded: Dp,
     scale: ContentScale = ContentScale.Crop
@@ -28,6 +30,7 @@ fun Image(
         modifier = Modifier
             .fillMaxWidth()
             .height(height)
+            .width(width)
             .clip(RoundedCornerShape(
                 topStart = topRounded,
                 topEnd = topRounded,

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drinkly.data.model.Review
+import com.example.drinkly.ui.components.Avatar
 import com.example.drinkly.ui.venue.VenueReviewViewModel
 import com.example.drinkly.ui.theme.AppColorBg
 import com.example.drinkly.ui.theme.AppColorBorder
@@ -291,11 +292,10 @@ fun ReviewCard(review: Review) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Avatar
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF9DB2BF))
+                    Avatar(
+                        initials = review.user["name"].toString().split(" ")?.map { it.first() }?.joinToString(""),
+                        height = 50.dp,
+                        width = 50.dp
                     )
 
                     Column {

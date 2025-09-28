@@ -30,4 +30,16 @@ data class User(
 
     val firstName: String?
         get() = name?.trim()?.split("\\s+".toRegex())?.firstOrNull()?.takeIf { it.isNotBlank() }
+
+    /**
+     * Na osnovu imena korisnika vraća inicijale.
+     */
+    fun getInitials(): String? {
+        val parts = name?.trim()?.split("\\s+".toRegex()) ?: return null
+        return when (parts.size) {
+            0 -> null
+            1 -> parts[0].take(2).uppercase()
+            else -> (parts[0].first().toString() + parts[1].first().toString()).uppercase()
+        }
+    }
 }

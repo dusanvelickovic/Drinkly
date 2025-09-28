@@ -136,11 +136,12 @@ fun VenueScreen(
             // Slika
            item {
                Image(
-                   venue.value?.imageUrl,
-                   venue.value?.name,
-                   190.dp,
-                   8.dp,
-                   8.dp
+                   imageUrl = venue.value?.imageUrl,
+                   description = venue.value?.name,
+                   height = 190.dp,
+                   width = 200.dp,
+                   topRounded = 8.dp,
+                   bottomRounded = 8.dp
                )
            }
 
@@ -314,11 +315,12 @@ fun MenuItemCard(
         ) {
             // Menu item slika
             Image(
-                menuItem.imageUrl,
-                menuItem.name,
-                80.dp,
-                8.dp,
-                8.dp,
+                imageUrl = menuItem.imageUrl,
+                description = menuItem.name,
+                height = 80.dp,
+                width = 200.dp,
+                topRounded = 8.dp,
+                bottomRounded = 8.dp,
             )
 
             Spacer(modifier = Modifier.height(8.dp))

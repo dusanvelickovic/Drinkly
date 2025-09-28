@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.drinkly.data.model.User
+import com.example.drinkly.ui.components.Avatar
 import com.example.drinkly.ui.theme.AppColorBg
+import com.example.drinkly.ui.theme.AppColorOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,18 +81,17 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFFFCCB3)) // pastelna boja kao placeholder
+                Avatar(
+                    initials = authUser?.getInitials(),
+                    height = 100.dp,
+                    width = 100.dp
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+
                 Column(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(0.dp, 16.dp),
                 ) {
                     authUser?.name?.let { Text(it, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
                     authUser?.bio?.let { Text(it, color = Color.Gray, fontSize = 14.sp) }
