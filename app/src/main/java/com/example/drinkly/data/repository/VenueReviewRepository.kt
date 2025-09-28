@@ -3,6 +3,7 @@ package com.example.drinkly.data.repository
 import com.example.drinkly.data.model.Review
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,7 @@ class VenueReviewRepository(
         val registration = firestore.collection("venues")
             .document(venueId)
             .collection("reviews")
+            .orderBy("date", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(Result.failure(error))

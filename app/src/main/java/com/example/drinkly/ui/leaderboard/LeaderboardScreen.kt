@@ -54,16 +54,16 @@ fun LeaderboardScreen(
             )
         )
 
-        users.onSuccess { users ->
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Users List
-                items(users.mapIndexed { index, user -> index to user }) { (index, user) ->
-                    UserCard(user = user, position = index + 1)
-                }
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            users.onSuccess { users ->
+            // Users List
+            items(users.mapIndexed { index, user -> index to user }) { (index, user) ->
+                UserCard(user = user, position = index + 1)
             }
+        }
         }
     }
 }
