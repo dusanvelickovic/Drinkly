@@ -2,16 +2,12 @@ package com.example.drinkly.ui.venue
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.LocationOn
@@ -23,10 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,7 +75,7 @@ fun VenueScreen(
     }
 
     // Prati izabranu kategoriju i ucitaj iteme za tu kategoriju
-    var selectedCategory by remember { mutableStateOf(MenuItemCategory.FOOD) }
+    var selectedCategory by remember { mutableStateOf(MenuItemCategory.ALL) }
     val menuItems = venueViewModel.menuItems.collectAsState().value
     LaunchedEffect(venueId, selectedCategory) {
         venueId?.let {
@@ -256,26 +249,13 @@ fun VenueScreen(
             }
 
             item {
-                // Category Tabs
-//                LazyRow(
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                ) {
-//                    items(categories) { category ->
-//                        CategoryChip(
-//                            category = category,
-//                            isSelected = category == selectedCategory,
-//                            onCategorySelected = { selectedCategory = it }
-//                        )
-//                    }
-
-                    CategorySelector(
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = {
-                            selectedCategory = it
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-//                }
+                CategorySelector(
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = {
+                        selectedCategory = it
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             item {
@@ -353,12 +333,12 @@ fun MenuItemCard(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Category
-            Text(
-                text = menuItem.description,
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
+            // Desciription
+           Text(
+               text = menuItem.description.substring(0, menuItem.description.length.coerceAtMost(100)),
+               fontSize = 12.sp,
+               color = Color.Gray
+           )
 
             Spacer(modifier = Modifier.height(8.dp))
 

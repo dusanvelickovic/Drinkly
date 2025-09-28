@@ -35,13 +35,22 @@ class MenuItemRepository @Inject constructor(
         }
     }
 
+    /**
+     * Dobijanje menu items za određeni venue filtrirano po kategoriji
+     */
     suspend fun getMenuItemsForVenueByCategory(venueId: String, category: MenuItemCategory): List<MenuItem> {
         return try {
-            val query = firestore
+            val baseCollection = firestore
                 .collection("venues")
                 .document(venueId)
                 .collection("menu_items")
-                .whereEqualTo("category", category.getKey())
+
+            // Build query conditionally BEFORE executing
+            val query = if (category != MenuItemCategory.ALL) {
+                baseCollection.whereEqualTo("category", category.getKey())
+            } else {
+                baseCollection
+            }
 
             val snapshot = query.get().await()
 
