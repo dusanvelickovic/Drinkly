@@ -28,10 +28,10 @@ import com.example.drinkly.ui.theme.AppColorOrange
 fun LeaderboardScreen(
     leaderboardViewModel: LeaderboardViewModel = LeaderboardViewModel(),
 ) {
-    val users by leaderboardViewModel.users.collectAsState()
-    // Initial fetch of venues
+    val users by leaderboardViewModel.usersFlow.collectAsState(initial = Result.success(emptyList()))
+
     LaunchedEffect(Unit) {
-        leaderboardViewModel.getTopUsers()
+        leaderboardViewModel.observeTopUsers()
     }
 
     Column(
@@ -54,13 +54,15 @@ fun LeaderboardScreen(
             )
         )
 
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Users List
-            items(users.mapIndexed { index, user -> index to user }) { (index, user) ->
-                UserCard(user = user, position = index + 1)
+        users.onSuccess { users ->
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Users List
+                items(users.mapIndexed { index, user -> index to user }) { (index, user) ->
+                    UserCard(user = user, position = index + 1)
+                }
             }
         }
     }
