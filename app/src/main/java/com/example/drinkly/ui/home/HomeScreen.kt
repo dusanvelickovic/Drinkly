@@ -133,11 +133,11 @@ fun HomeScreen(
                 try {
 
                     // Ako je klik na All, učitaj sve iteme
-//                    if (category == "all") {
-//                        menuItems = homeViewModel.getMenuItemsForVenue(selectedVenue!!.id)
-//                    } else {
+                    if (category == MenuItemCategory.ALL) {
+                        menuItems = homeViewModel.getMenuItemsForVenue(selectedVenue!!.id)
+                    } else {
                         menuItems = homeViewModel.getMenuItemsForVenueByCategory(selectedVenue!!.id, category)
-//                    }
+                    }
 
                     isLoadingMenu = false
                 } catch (e: Exception) {

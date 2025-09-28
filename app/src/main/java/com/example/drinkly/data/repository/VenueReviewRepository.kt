@@ -113,4 +113,25 @@ class VenueReviewRepository(
             Result.failure(e)
         }
     }
+
+    /**
+     * Inkrementiraj broj recenzija za dati venueId
+     */
+    suspend fun incrementVenueReviewsCount(venueId: String): Result<Void?> {
+        return try {
+            val venueRef = firestore.collection("venues").document(venueId)
+
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(venueRef)
+                val currentCount = snapshot.getLong("reviews_count") ?: 0
+                transaction.update(venueRef, "reviews_count", currentCount + 1)
+            }.await()
+
+            println("Successfully incremented reviews_count for venue: $venueId")
+            Result.success(null)
+        } catch (e: Exception) {
+            println("Failed to increment reviews_count for venue '$venueId': ${e.message}")
+            Result.failure(e)
+        }
+    }
 }

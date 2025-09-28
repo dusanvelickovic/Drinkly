@@ -23,7 +23,6 @@ class MenuItemRepository @Inject constructor(
                 .collection("venues")
                 .document(venueId)
                 .collection("menu_items")
-                .whereEqualTo("available", true)
                 .get()
                 .await()
 
@@ -42,7 +41,6 @@ class MenuItemRepository @Inject constructor(
                 .collection("venues")
                 .document(venueId)
                 .collection("menu_items")
-                .whereEqualTo("available", true)
                 .whereEqualTo("category", category.getKey())
 
             val snapshot = query.get().await()

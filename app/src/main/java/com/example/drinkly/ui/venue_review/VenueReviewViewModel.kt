@@ -37,6 +37,7 @@ class VenueReviewViewModel(
             storeVenueReview(venueId, title, comment, rating)
             recalculateVenueRating(venueId)
             incrementUserReviewsPosted()
+            incrementVenueReviewsCount(venueId)
         }
     }
 
@@ -68,4 +69,10 @@ class VenueReviewViewModel(
      * Inkrementiraj broj postavljenih recenzija za korisnika
      */
     private suspend fun incrementUserReviewsPosted() = venueReviewRepository.incrementUserReviewsPosted()
+
+    /**
+     * Inkrementiraj broj recenzija za dati venueId
+     */
+    private suspend fun incrementVenueReviewsCount(venueId: String)
+        = venueReviewRepository.incrementVenueReviewsCount(venueId)
 }

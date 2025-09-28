@@ -251,11 +251,6 @@ fun VenueReviewScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Send,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
-                                        )
                                         Text("Submit Review")
                                     }
                                 }

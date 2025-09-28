@@ -25,6 +25,9 @@ data class Venue(
     @get:PropertyName("rating") @set:PropertyName("rating")
     var rating: Double = 0.0,
 
+    @get:PropertyName("reviews_count") @set:PropertyName("reviews_count")
+    var reviewsCount: Int = 0,
+
     @get:PropertyName("description") @set:PropertyName("description")
     var description: String = "",
 
@@ -32,7 +35,7 @@ data class Venue(
     var imageUrl: String = "",
 ) {
     // Potreban prazan konstruktor za Firestore
-    constructor() : this("", "", "", "", GeoPoint(0.0,0.0), "", 0.0, "", "")
+    constructor() : this("", "", "", "", GeoPoint(0.0,0.0), "", 0.0, 0, "", "")
 
     // Mapira kategorije na prikazno ime
     fun getDisplayCategory(): String {

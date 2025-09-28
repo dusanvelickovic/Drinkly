@@ -10,9 +10,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,7 +43,7 @@ fun VenueBottomSheet(
     onCategoryChange: (MenuItemCategory) -> Unit,
     onVenueClick: (venue: Venue) -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf(MenuItemCategory.FOOD) }
+    var selectedCategory by remember { mutableStateOf(MenuItemCategory.ALL) }
 
     // Kada se promeni kategorija, filtriraj menu items
     LaunchedEffect(selectedCategory) {
@@ -59,19 +61,10 @@ fun VenueBottomSheet(
         venue?.let { v ->
             VenueHeader(
                 venue = v,
-                menuItemsCount = menuItems.filter { it.available }.size,
                 onCloseBottomSheet = onCloseBottomSheet,
                 onVenueClick = onVenueClick,
             )
         }
-
-        CategorySelector(
-            selectedCategory = selectedCategory,
-            onCategorySelected = {
-                selectedCategory = it
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
 
         // Menu items sekcija
         Column(
@@ -82,9 +75,9 @@ fun VenueBottomSheet(
         ) {
             // Menu items count
             Text(
-                text = "Total ${menuItems.filter { it.available }.size} items",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
+                text = "Menu",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
             )
 
             when {
@@ -96,7 +89,7 @@ fun VenueBottomSheet(
                 }
                 else -> {
                     MenuItemsList(
-                        menuItems = menuItems.filter { it.available },
+                        menuItems = menuItems,
                         onMenuItemClick = onMenuItemClick
                     )
                 }
@@ -108,7 +101,6 @@ fun VenueBottomSheet(
 @Composable
 private fun VenueHeader(
     venue: Venue,
-    menuItemsCount: Int,
     onCloseBottomSheet: () -> Unit,
     onVenueClick: (venue: Venue) -> Unit,
 ) {
@@ -170,7 +162,7 @@ private fun VenueHeader(
                             modifier = Modifier.size(14.dp)
                         )
                         Text (
-                            text = "${"%.1f".format(venue.rating)} (${menuItemsCount} items)",
+                            text = "${"%.1f".format(venue.rating)} (${venue.reviewsCount} reviews)",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 14.sp,
                             modifier = Modifier.padding(start = 4.dp)
@@ -348,24 +340,22 @@ private fun MenuItemCard(
                     .padding(horizontal = 6.dp)
             )
 
-            // Ocena i broj reviewa
+            // Dostupnost
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.Star,
+                    imageVector = menuItem.available.let {
+                        if (it) Icons.Default.CheckCircle else Icons.Default.Warning
+                    },
                     contentDescription = "Rating",
-                    tint = AppColorOrange,
+                    tint = menuItem.available.let {
+                        if (it) Color.Green else Color.Red
+                    },
                     modifier = Modifier.size(14.dp)
                 )
                 Text (
-                    text= "3.5",
-                    color = AppColorOrange,
+                    text= menuItem.available.let { if (it) "Available" else "Unavailable" },
+                    color = Color.Black,
                     fontSize = 14.sp,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-                Text (
-                    text = " (2 Reviews)",
-                    color = Color.Gray,
-                    fontSize = 12.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
