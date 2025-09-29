@@ -1,6 +1,8 @@
 package com.example.drinkly.ui.home
 
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,6 +21,7 @@ import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.components.VenueBottomSheet
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -28,6 +31,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
+import androidx.core.graphics.scale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +82,7 @@ fun HomeScreen(
     // Postavi kameru kada se učita korisnikova lokacija
     LaunchedEffect(userLocation) {
         userLocation?.let { location ->
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 14f)
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
             println("Kamera pozicionirana na: ${location.latitude}, ${location.longitude}")
         }
     }
@@ -163,6 +167,12 @@ fun HomeScreen(
                     mapStyleOptions = mapStyleOptions
                 )
             ) {
+                val originalBitmap = BitmapFactory.decodeResource(context.resources, com.example.drinkly.R.drawable.glass_icon)
+                val icon = originalBitmap?.let {
+                    val scaledBitmap = it.scale(60, 100, false)
+                    BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                }
+
                 // Markeri za venues
                 venues?.forEach { venue ->
                     Marker(
@@ -176,7 +186,8 @@ fun HomeScreen(
                             // Pozovi funkciju za otvaranje bottom sheet-a
                             onMarkerClick(venue)
                             true // Vrati true da konzumiraš click event
-                        }
+                        },
+                        icon = icon,
                     )
                 }
             }

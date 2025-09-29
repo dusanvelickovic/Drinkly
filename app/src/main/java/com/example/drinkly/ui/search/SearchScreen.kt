@@ -221,6 +221,7 @@ fun SearchScreen(
                             Text("$selectedRadius km")
                         }
 
+                        // Ovo ne radi na fizičkom uređaju
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
@@ -232,11 +233,9 @@ fun SearchScreen(
                                 DropdownMenuItem(
                                     text = { Text("$option km") },
                                     onClick = {
-                                        selectedRadius = option
-                                        expanded = false
-
                                         // Trigger search with new radius
-                                        handleSelectRadius(option.toIntOrNull().toString())
+                                        handleSelectRadius(option)
+                                        true
                                     }
                                 )
                             }
