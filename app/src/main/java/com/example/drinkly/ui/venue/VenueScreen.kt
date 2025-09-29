@@ -10,8 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drinkly.data.enum.MenuItemCategory
@@ -336,15 +339,16 @@ fun MenuItemCard(
             Spacer(modifier = Modifier.height(2.dp))
 
             // Desciription
-           Text(
-               text = menuItem.description.substring(0, menuItem.description.length.coerceAtMost(100)),
-               fontSize = 12.sp,
-               color = Color.Gray
-           )
+            Text(
+                text = menuItem.description.substring(0, menuItem.description.length.coerceAtMost(100)),
+                fontSize = 12.sp,
+                color = Color.Gray,
+                lineHeight = 1.2.em
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Price and Add Button
+            // Price
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -355,6 +359,26 @@ fun MenuItemCard(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
+                )
+            }
+
+            // Availability
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = menuItem.available.let {
+                        if (it) Icons.Default.CheckCircle else Icons.Default.Warning
+                    },
+                    contentDescription = "Rating",
+                    tint = menuItem.available.let {
+                        if (it) Color.Green else Color.Red
+                    },
+                    modifier = Modifier.size(14.dp)
+                )
+                Text (
+                    text= menuItem.available.let { if (it) "Available" else "Unavailable" },
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 4.dp)
                 )
             }
         }
