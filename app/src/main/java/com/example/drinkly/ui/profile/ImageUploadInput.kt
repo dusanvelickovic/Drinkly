@@ -25,7 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.drinkly.ui.components.Image
+import java.io.File
 
 @Composable
 fun ImageUploadInput(
@@ -36,7 +38,26 @@ fun ImageUploadInput(
 ) {
     val context = LocalContext.current
     var showImageSourceDialog by remember { mutableStateOf(false) }
-    var tempUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Kreiraj temp file i URI pre renderovanja
+    val tempFile = remember {
+        File.createTempFile(
+            "camera_image_${System.currentTimeMillis()}",
+            ".jpg",
+            context.cacheDir
+        ).apply {
+            deleteOnExit()
+        }
+    }
+
+    // Uri za sliku
+    val tempUri = remember {
+        FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            tempFile
+        )
+    }
 
     // Gallery launcher
     val galleryLauncher = rememberLauncherForActivityResult(
