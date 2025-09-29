@@ -120,6 +120,7 @@ fun UserCard(user: User, position: Int) {
             // Avatar
             Avatar(
                 initials = user.getInitials(),
+                imageUrl = user.profileImageUrl,
                 height = 50.dp,
                 width = 50.dp
             )

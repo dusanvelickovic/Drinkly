@@ -1,5 +1,7 @@
 package com.example.drinkly.data.repository
 
+import android.net.Uri
+import com.example.drinkly.data.helper.CloudinaryHelper
 import com.example.drinkly.data.model.User
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -11,6 +13,10 @@ class AuthRepository(
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
+    /**
+     * Registruj novog korisnika sa email-om, lozinkom, imenom i telefonom.
+     * Nakon uspešne registracije, dodatni podaci se čuvaju u Firestore.
+     */
     suspend fun register(
         email: String,
         password: String,
@@ -30,7 +36,8 @@ class AuthRepository(
                 phone = phone,
                 bio = "Life's too short for bad drinks ✌\uFE0F\uFE0F\uD83C\uDF78",
                 reviewsPosted = 0,
-                createdAt = Timestamp.now()
+                createdAt = Timestamp.now(),
+                profileImageUrl = null,
             )
 
             // 3. Sačuvaj dodatne podatke u Firestore
@@ -47,6 +54,9 @@ class AuthRepository(
         Result.failure(e)
     }
 
+    /**
+     * Prijavi korisnika sa email-om i lozinkom.
+     */
     suspend fun login(email: String, password: String): Result<Unit> {
         return try {
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
@@ -56,6 +66,9 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Dohvati podatke o trenutno ulogovanom korisniku.
+     */
     suspend fun getAuthUser(): Result<User?> = try {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: throw Exception("User not authenticated")
         val document = firestore.collection("users")
@@ -69,10 +82,16 @@ class AuthRepository(
         Result.failure(e)
     }
 
+    /**
+     * Proveri da li je korisnik ulogovan.
+     */
     fun checkAuth(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
     }
 
+    /**
+     * Izmeni korisničke podatke.
+     */
     suspend fun updateUser(name: String, email: String, phone: String, bio: String): Result<Unit> {
         val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
         val updates = mapOf(
@@ -93,6 +112,53 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Izmeni korisničku sliku.
+     */
+    suspend fun updateUserProfileImage(imageUri: Uri): Result<String> {
+        val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
+
+        return try {
+            // Upload image to Cloudinary
+            val imageUrl = CloudinaryHelper.uploadImageToCloudinary(imageUri)
+                ?: return Result.failure(Exception("Image upload failed"))
+
+            println("Uploaded image URL: $imageUrl")
+
+            // Update user's image URL in Firestore
+            firestore.collection("users")
+                .document(currentUser.uid)
+                .update("profile_image_url", imageUrl)
+                .await()
+
+            Result.success(imageUrl)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Ukloni korisničku sliku.
+     */
+    suspend fun removeUserImage(): Result<String> {
+        val currentUser: FirebaseUser =
+            firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
+
+        return try {
+            // Update user's image URL in Firestore to null
+            firestore.collection("users")
+                .document(currentUser.uid)
+                .update("profile_image_url", null)
+                .await()
+            Result.success("Profile image removed")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Izloguj korisnika.
+     */
     fun logout() {
         firebaseAuth.signOut()
     }

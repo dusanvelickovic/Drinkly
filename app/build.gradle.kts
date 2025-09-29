@@ -1,3 +1,10 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+val secretProps = Properties().apply {
+    load(FileInputStream(rootProject.file("secrets.properties")))
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +25,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${secretProps["CLOUDINARY_CLOUD_NAME"]}\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"${secretProps["CLOUDINARY_API_KEY"]}\"")
+        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"${secretProps["CLOUDINARY_API_SECRET"]}\"")
     }
 
     buildTypes {
@@ -38,6 +49,9 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+        viewBinding = true
+        dataBinding = false
     }
 }
 
@@ -83,6 +97,9 @@ dependencies {
 
     // Glide for image loading
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
+    // Cloudinary for image upload and management
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }
 
 secrets {

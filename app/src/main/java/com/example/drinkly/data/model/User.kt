@@ -22,11 +22,14 @@ data class User(
     @get:PropertyName("reviews_posted") @set:PropertyName("reviews_posted")
     var reviewsPosted: Int = 0,
 
+    @get:PropertyName("profile_image_url") @set:PropertyName("profile_image_url")
+    var profileImageUrl: String? = null,
+
     @get:PropertyName("created_at") @set:PropertyName("created_at")
     var createdAt: Timestamp = Timestamp.now(),
 ) {
     // Potreban prazan konstruktor za Firestore
-    constructor() : this("", "", "", null, "", 0, Timestamp.now())
+    constructor() : this("", "", "", null, "", 0, null, Timestamp.now())
 
     val firstName: String?
         get() = name?.trim()?.split("\\s+".toRegex())?.firstOrNull()?.takeIf { it.isNotBlank() }

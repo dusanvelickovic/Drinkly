@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -37,12 +38,8 @@ fun Avatar(
             modifier = Modifier
                 .height(height)
                 .width(width)
-                .clip(RoundedCornerShape(
-                    topStart = 50.dp,
-                    topEnd = 50.dp,
-                    bottomStart = 50.dp,
-                    bottomEnd = 50.dp
-                )),
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop
         )
     }
     else if (initials != null) {

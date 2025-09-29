@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.profile
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +28,10 @@ import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import com.example.drinkly.ui.theme.AppColorDarkBlue
+//import com.example.drinkly.data.helper.Cloudinary
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +44,7 @@ fun EditProfileScreen(
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     var authUser by remember { mutableStateOf<User?>(null) }
     LaunchedEffect(Unit) {
@@ -45,15 +52,27 @@ fun EditProfileScreen(
         println(authUser)
 
         // Initialize form fields with current user data
-         name = authUser?.name ?: ""
-         email = authUser?.email ?: ""
-         phone = authUser?.phone ?: ""
-         bio = authUser?.bio ?: ""
+        name = authUser?.name ?: ""
+        email = authUser?.email ?: ""
+        phone = authUser?.phone ?: ""
+        bio = authUser?.bio ?: ""
+
+        // Load current user image if available
+        selectedImageUri = authUser?.profileImageUrl?.let { Uri.parse(it) }
     }
 
     // Handle loading state
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
+
+    fun handleProfileImageRemove() {
+        selectedImageUri = null
+
+        // Obrisi sliku iz korisničkog profila u bazi podataka
+        coroutineScope.launch {
+            authViewModel.removeUserProfileImage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -94,38 +113,35 @@ fun EditProfileScreen(
             ),
         )
 
-        // Profile Image
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Box {
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .background(
-                            color = Color(0xFFFFB89A),
-                            shape = CircleShape
-                        )
-                )
+        // Upload profulne slike
+        ImageUploadInput(
+            currentImageUri = selectedImageUri,
+            onImageSelected = { uri -> selectedImageUri = uri }
+        )
 
-                IconButton(
-                    onClick = { /* Handle image edit */ },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(36.dp)
-                        .background(
-                            color = Color(0xFFFF6B35),
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit photo",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+        if (selectedImageUri != null) {
+            TextButton(
+                onClick = { handleProfileImageRemove() },
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(AppColorDarkBlue)
+                    .height(40.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove photo",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Remove profile image",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -175,12 +191,22 @@ fun EditProfileScreen(
                     coroutineScope.launch {
                         isLoading = true
                         val result = authViewModel.updateUser(name, email, phone, bio)
-                        isLoading = false
+
+                        if (selectedImageUri != null) {
+                            val imageResult = authViewModel.updateUserProfileImage(selectedImageUri!!)
+                            if (imageResult.isSuccess) {
+                                println("Image updated successfully: ${imageResult.getOrNull()}")
+                            } else {
+                                println("Image update failed: ${imageResult.exceptionOrNull()?.message}")
+                            }
+                        }
 
                         if (!result.isSuccess) {
                             // Handle error
                             println("Update failed: ${result.exceptionOrNull()?.message}")
                         }
+
+                        isLoading = false
                     }
                 },
                 enabled = !isLoading,
