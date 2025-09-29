@@ -4,7 +4,6 @@ import android.net.Uri
 import com.example.drinkly.data.helper.CloudinaryHelper
 import com.example.drinkly.data.model.Review
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
