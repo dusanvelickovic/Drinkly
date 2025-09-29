@@ -8,19 +8,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.example.drinkly.navigation.AppNavigation
 import com.example.drinkly.ui.theme.DrinklyTheme
-import com.example.drinkly.viewmodel.LocationViewModel
 
 class MainActivity : ComponentActivity() {
-    private val locationViewModel: LocationViewModel by viewModels()
+    private val locationViewModel by lazy {
+        (application as DrinklyApplication).locationViewModel
+    }
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                locationViewModel.start()
+                locationViewModel.start() // start tracking after permission granted
             } else {
                 Log.e("MainActivity", "Location permission denied")
             }

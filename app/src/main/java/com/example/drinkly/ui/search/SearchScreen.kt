@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.drinkly.DrinklyApplication
 import com.example.drinkly.data.model.User
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.components.CategoryChip
@@ -43,7 +44,6 @@ import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
-import com.example.drinkly.viewmodel.LocationViewModel
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +68,7 @@ fun SearchScreen(
      }
 
     // Live user location
-    val locationViewModel: LocationViewModel = viewModel(LocalContext.current as ComponentActivity)
+    val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
     val userLocation by locationViewModel.location.observeAsState()
 
     var searchQuery by remember { mutableStateOf("") }
