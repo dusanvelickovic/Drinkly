@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.animation.core.lint)
     implementation(libs.play.services.location)
     implementation(libs.androidx.ui.text)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,11 +86,6 @@ dependencies {
     val nav_version = "2.9.3"
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
-//    implementation("com.google.maps.android:maps-compose:4.3.3")
-//    implementation("com.google.maps.android:maps-compose-utils:4.3.3")
-//    implementation("com.google.maps.android:maps-compose-widgets:4.3.3")
-//    implementation("com.google.android.gms:play-services-location:21.0.1")
-//    implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.places)
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
@@ -100,6 +96,9 @@ dependencies {
 
     // Cloudinary for image upload and management
     implementation("com.cloudinary:cloudinary-android:3.0.2")
+
+    // Location services
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }
 
 secrets {

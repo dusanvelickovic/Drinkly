@@ -1,5 +1,7 @@
 package com.example.drinkly.ui.search
 
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,12 +19,14 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -39,6 +43,7 @@ import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
+import com.example.drinkly.viewmodel.LocationViewModel
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +51,7 @@ import java.util.Calendar
 fun SearchScreen(
     searchViewModel: SearchViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel (),
-    onVenueCardClick: (venueId: String) -> Unit
+    onVenueCardClick: (venueId: String) -> Unit,
 ) {
     var authUser by remember { mutableStateOf<User?>(null) }
     LaunchedEffect(Unit) {
@@ -62,12 +67,16 @@ fun SearchScreen(
          else -> "Good Evening!"
      }
 
+    // Live user location
+    val locationViewModel: LocationViewModel = viewModel(LocalContext.current as ComponentActivity)
+    val userLocation by locationViewModel.location.observeAsState()
+
     var searchQuery by remember { mutableStateOf("") }
 
     var selectedCategory by remember { mutableStateOf("all") }
     // When selectedCategory changes, fetch venues for that category
     LaunchedEffect(selectedCategory) {
-        searchViewModel.searchVenues(category = selectedCategory, searchQuery = searchQuery)
+        searchViewModel.searchVenues(category = selectedCategory, searchQuery = searchQuery, radius = 0, userLocation)
     }
 
     val venues by searchViewModel.venues
@@ -77,6 +86,25 @@ fun SearchScreen(
     }
 
     val categories = searchViewModel.categories
+
+    // Filter by radius dropdown states
+    var expanded by remember { mutableStateOf(false) }
+    val radiusOptions = listOf("0", "1", "2", "5", "10")
+    var selectedRadius by remember { mutableStateOf(radiusOptions[0]) }
+
+    // When selectedRadius changes, fetch venues for that radius
+    fun handleSelectRadius(option: String) {
+        selectedRadius = option
+        expanded = false
+
+        // Trigger search with new radius
+        searchViewModel.searchVenues(
+            category = selectedCategory,
+            searchQuery = searchQuery,
+            radius = option.toIntOrNull() ?: 10,
+            userLocation = userLocation,
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -106,56 +134,111 @@ fun SearchScreen(
             verticalArrangement = Arrangement.spacedBy(15.dp),
             contentPadding = PaddingValues(bottom = 10.dp)
         ) {
-            // Search Bar
+            // Search Bar & Radius Filter - FIXED
             item {
-                TextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = "Search restaurants, pubs, cafes...",
-                            color = Color(0xFF636E72)
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = Color(0xFF636E72)
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            searchViewModel.searchVenues(
-                                category = selectedCategory,
-                                searchQuery = searchQuery
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Search Input
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = {
+                            Text(
+                                text = "Search venues..",
+                                color = Color(0xFF636E72)
                             )
-                        }
-                    ),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        errorIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        disabledContainerColor = Color.White,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .border(
-                            width = 1.dp,
-                            color = AppColorBorder,
-                            shape = RoundedCornerShape(12.dp)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = Color(0xFF636E72)
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search
                         ),
-                    shape = RoundedCornerShape(12.dp),
-                )
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                searchViewModel.searchVenues(
+                                    category = selectedCategory,
+                                    searchQuery = searchQuery,
+                                    radius = 0
+                                )
+                            }
+                        ),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            errorIndicatorColor = Color.Transparent,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                            .background(Color.White, RoundedCornerShape(12.dp))
+                            .border(
+                                width = 1.dp,
+                                color = AppColorBorder,
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        shape = RoundedCornerShape(12.dp),
+                    )
+
+                    // Filter by radius
+                    Box {
+                        OutlinedButton(
+                            onClick = { expanded = true },
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, AppColorBorder),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.White,
+                                contentColor = Color(0xFF636E72)
+                            ),
+                            modifier = Modifier
+                                .height(56.dp)
+                                .widthIn(min = 100.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "Location",
+                                tint = AppColorOrange,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("$selectedRadius km")
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier
+                                .background(Color.White)
+                                .border(BorderStroke(1.dp, AppColorBorder), RoundedCornerShape(8.dp))
+                        ) {
+                            radiusOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text("$option km") },
+                                    onClick = {
+                                        selectedRadius = option
+                                        expanded = false
+
+                                        // Trigger search with new radius
+                                        handleSelectRadius(option.toIntOrNull().toString())
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
+
 
             // Categories Section
             item {
@@ -205,15 +288,6 @@ fun SearchScreen(
                 }
             }
 
-//            items(
-//                items = venues.orEmpty(),
-//                key = { it.id ?: it.hashCode().toString() }
-//            ) { venue ->
-//                VenueCard(
-//                    venue = venue,
-//                    onClick = { onVenueCardClick(venue.id) }
-//                )
-//            }
             if (venues.isNullOrEmpty()) {
                 item {
                     Box(

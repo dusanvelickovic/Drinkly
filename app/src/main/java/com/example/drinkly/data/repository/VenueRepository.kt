@@ -1,11 +1,9 @@
 package com.example.drinkly.data.repository
 
+import android.location.Location
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.drinkly.data.model.Venue
 import kotlinx.coroutines.tasks.await
-import kotlin.text.get
-import kotlin.text.toDouble
-import kotlin.text.toLong
 
 class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -15,7 +13,9 @@ class VenueRepository(
      */
     suspend fun searchVenues(
         category: String = "all",
-        searchQuery: String = ""
+        searchQuery: String = "",
+        radius: Int = 0,
+        userLocation: Location? = null
     ): Result<List<Venue>> = try {
         val baseQuery = if (category == "all") {
             firestore.collection("venues")
@@ -27,6 +27,7 @@ class VenueRepository(
         val venues = snapshot.documents.mapNotNull { document ->
             try {
                 val venue = document.toObject(Venue::class.java)
+
                 venue?.apply {
                     id = document.id
                 }?.takeIf { venue ->
@@ -43,7 +44,14 @@ class VenueRepository(
             }
         }
 
-        Result.success(venues)
+        // Ako je unet radius i lokacija korisnika, dodatno filtriraj po udaljenosti
+        val filteredVenues = if (radius > 0 && userLocation != null) {
+            filterVenuesByDistance(venues = venues, userLocation = userLocation, radius = radius)
+        } else {
+            venues
+        }
+
+        Result.success(filteredVenues)
     } catch (e: Exception) {
         val action = if (searchQuery.isBlank()) "fetch" else "search"
         println("Failed to $action venues for category '$category' with query '$searchQuery'")
@@ -93,5 +101,27 @@ class VenueRepository(
     } catch (e: Exception) {
         println("Failed to recalculate average rating for venue $venueId: ${e.message}")
         Result.failure(e)
+    }
+
+    /**
+     * Filtriraj venue po udaljenosti od korisnika
+     */
+    fun filterVenuesByDistance(
+        venues: List<Venue>,
+        userLocation: Location,
+        radius: Int
+    ): List<Venue> {
+        return venues.filter { venue ->
+            val venueLocation = venue.location
+            run {
+                val results = FloatArray(1)
+                Location.distanceBetween(
+                    userLocation.latitude, userLocation.longitude,
+                    venueLocation.latitude, venueLocation.longitude,
+                    results
+                )
+                results[0] <= radius * 1000 // radius je u km, distanceBetween vraća u metrima
+            }
+        }
     }
 }

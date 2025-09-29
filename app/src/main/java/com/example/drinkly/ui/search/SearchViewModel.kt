@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.search
 
+import android.location.Location
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -43,9 +44,23 @@ class SearchViewModel(
     private val _venues = mutableStateOf<List<Venue>?>(null)
     val venues: State<List<Venue>?> = _venues
 
-    fun searchVenues(category: String = "all", searchQuery: String = "") {
+    /**
+     * Pretrazi venue po kategoriji i/ili imenu
+     */
+    fun searchVenues(
+        category: String = "all",
+        searchQuery: String = "",
+        radius: Int = 0,
+        userLocation: Location? = null
+    ) {
         viewModelScope.launch {
-            val result = venueRepository.searchVenues(category, searchQuery)
+            val result = venueRepository.searchVenues(
+                category,
+                searchQuery,
+                radius,
+                userLocation
+            )
+
             if (result.isSuccess) {
                 _venues.value = result.getOrNull()
                 val logMessage = if (searchQuery.isBlank()) {
