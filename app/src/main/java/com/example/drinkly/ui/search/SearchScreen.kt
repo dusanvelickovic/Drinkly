@@ -71,12 +71,22 @@ fun SearchScreen(
     val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
     val userLocation by locationViewModel.location.observeAsState()
 
+    // Filter by radius dropdown states
+    var expanded by remember { mutableStateOf(false) }
+    val radiusOptions = listOf("0", "1", "2", "5", "10")
+    var selectedRadius by remember { mutableStateOf(radiusOptions[0]) }
+
     var searchQuery by remember { mutableStateOf("") }
 
     var selectedCategory by remember { mutableStateOf("all") }
     // When selectedCategory changes, fetch venues for that category
     LaunchedEffect(selectedCategory) {
-        searchViewModel.searchVenues(category = selectedCategory, searchQuery = searchQuery, radius = 0, userLocation)
+        searchViewModel.searchVenues(
+            category = selectedCategory,
+            searchQuery = searchQuery,
+            radius = selectedRadius.toIntOrNull() ?: 0,
+            userLocation
+        )
     }
 
     val venues by searchViewModel.venues
@@ -87,11 +97,6 @@ fun SearchScreen(
 
     val categories = searchViewModel.categories
 
-    // Filter by radius dropdown states
-    var expanded by remember { mutableStateOf(false) }
-    val radiusOptions = listOf("0", "1", "2", "5", "10")
-    var selectedRadius by remember { mutableStateOf(radiusOptions[0]) }
-
     // When selectedRadius changes, fetch venues for that radius
     fun handleSelectRadius(option: String) {
         selectedRadius = option
@@ -101,7 +106,7 @@ fun SearchScreen(
         searchViewModel.searchVenues(
             category = selectedCategory,
             searchQuery = searchQuery,
-            radius = option.toIntOrNull() ?: 10,
+            radius = option.toIntOrNull() ?: 0,
             userLocation = userLocation,
         )
     }
@@ -166,7 +171,8 @@ fun SearchScreen(
                                 searchViewModel.searchVenues(
                                     category = selectedCategory,
                                     searchQuery = searchQuery,
-                                    radius = 0
+                                    radius = selectedRadius.toIntOrNull() ?: 0,
+                                    userLocation = userLocation
                                 )
                             }
                         ),
