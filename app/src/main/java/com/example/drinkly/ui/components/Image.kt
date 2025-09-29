@@ -22,7 +22,8 @@ fun Image(
     width: Dp,
     topRounded: Dp,
     bottomRounded: Dp,
-    scale: ContentScale = ContentScale.Crop
+    scale: ContentScale = ContentScale.Crop,
+    roundedCornerShape: Boolean = true,
 ) {
     GlideImage(
         model = imageUrl,
@@ -31,12 +32,20 @@ fun Image(
             .fillMaxWidth()
             .height(height)
             .width(width)
-            .clip(RoundedCornerShape(
-                topStart = topRounded,
-                topEnd = topRounded,
-                bottomStart = bottomRounded,
-                bottomEnd = bottomRounded
-            )),
+            .then(
+                if (roundedCornerShape) {
+                    Modifier.clip(
+                        RoundedCornerShape(
+                            topStart = topRounded,
+                            topEnd = topRounded,
+                            bottomStart = bottomRounded,
+                            bottomEnd = bottomRounded
+                        )
+                    )
+                } else {
+                    Modifier
+                }
+            ),
         contentScale = scale
     )
 }

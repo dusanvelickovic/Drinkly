@@ -22,10 +22,13 @@ data class Review (
     @get:PropertyName("date") @set:PropertyName("date")
     var date: Timestamp = Timestamp.now(),
 
+    @get:PropertyName("image_url") @set:PropertyName("image_url")
+    var imageUrl: String? = null,
+
     @get:PropertyName("user") @set:PropertyName("user")
     var user: Map<String, Any> = emptyMap()
 ) {
-    constructor() : this("", "", "", "", 0, Timestamp.now())
+    constructor() : this("", "", "", "", 0, Timestamp.now(), null,)
 
     fun getDateFormatted(): String {
         val date = date.toDate()

@@ -34,7 +34,8 @@ import java.io.File
 fun ImageUploadInput(
     currentImageUri: Uri? = null,
     onImageSelected: (Uri?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    roundedCornerShape: Boolean = true,
 ) {
     val context = LocalContext.current
     var showImageSourceDialog by remember { mutableStateOf(false) }
@@ -73,7 +74,13 @@ fun ImageUploadInput(
         Box(
             modifier = Modifier
                 .size(120.dp)
-                .clip(CircleShape)
+                .then(
+                    if (roundedCornerShape) {
+                        Modifier.clip(CircleShape)
+                    } else {
+                        Modifier
+                    }
+                )
                 .background(
                     color = if (currentImageUri != null) Color.Transparent else Color(0xFFFFB89A),
                     shape = CircleShape
@@ -89,28 +96,20 @@ fun ImageUploadInput(
                     width = 120.dp,
                     height = 120.dp,
                     topRounded = 0.dp,
-                    bottomRounded = 60.dp,
-                    scale = ContentScale.Crop
+                    bottomRounded = 0.dp,
+                    scale = ContentScale.Crop,
+                    roundedCornerShape = roundedCornerShape,
                 )
-
-//                AsyncImage(
-//                    model = currentImageUri,
-//                    contentDescription = "Odabrana slika",
-//                    modifier = Modifier
-//                        .size(120.dp)
-//                        .clip(CircleShape),
-//                    contentScale = ContentScale.Crop
-//                )
             } else {
                 // Prikaži placeholder
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Person,
+                        imageVector = Icons.Default.Add,
                         contentDescription = "Add image",
                         tint = Color.White,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(36.dp),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(

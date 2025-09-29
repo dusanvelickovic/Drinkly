@@ -1,7 +1,10 @@
 package com.example.drinkly.data.repository
 
+import android.net.Uri
+import com.example.drinkly.data.helper.CloudinaryHelper
 import com.example.drinkly.data.model.Review
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -73,7 +76,8 @@ class VenueReviewRepository(
                 "title" to review.title,
                 "comment" to review.comment,
                 "rating" to review.rating,
-                "date" to review.date
+                "date" to review.date,
+                "image_url" to review.imageUrl,
             )
 
             val documentRef = firestore.collection("venues")
@@ -131,6 +135,20 @@ class VenueReviewRepository(
             Result.success(null)
         } catch (e: Exception) {
             println("Failed to increment reviews_count for venue '$venueId': ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Samo sačuvaj sliku recenzije u Cloudinary i vrati URL
+     */
+    suspend fun storeVenueReviewImage(imageUri: Uri): Result<String> {
+        return try {
+            val imageUrl = CloudinaryHelper.uploadImageToCloudinary(imageUri)
+
+            println("Successfully uploaded review image to Cloudinary: $imageUrl")
+            Result.success(imageUrl)
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }

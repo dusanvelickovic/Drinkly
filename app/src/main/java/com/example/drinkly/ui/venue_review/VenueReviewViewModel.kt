@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.venue
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drinkly.data.model.Review
@@ -32,9 +33,16 @@ class VenueReviewViewModel(
     /**
      * Postavi recenziju za dati venueId
      */
-    fun submitReview(venueId: String, title: String, comment: String, rating: Int) {
+    fun submitReview(venueId: String, title: String, comment: String, rating: Int, imageUri: Uri?) {
         viewModelScope.launch {
-            storeVenueReview(venueId, title, comment, rating)
+            // Sačuvaj sliku recenzije ako postoji
+            val imageUrl: String? = storeVenueReviewImage(imageUri)
+
+            println("Review image URL: $imageUrl")
+
+            // Sačuvaj recenziju
+            storeVenueReview(venueId, title, comment, rating, imageUrl)
+
             recalculateVenueRating(venueId)
             incrementUserReviewsPosted()
             incrementVenueReviewsCount(venueId)
@@ -44,12 +52,13 @@ class VenueReviewViewModel(
     /**
      * Sačuvaj recenziju za dati venueId
      */
-    private suspend fun storeVenueReview(venueId: String, title: String, comment: String, rating: Int) {
+    private suspend fun storeVenueReview(venueId: String, title: String, comment: String, rating: Int, imageUrl: String?) {
         val review = Review(
             userUid = AuthRepository().getAuthUser().getOrThrow()?.uid ?: "",
             title = title,
             comment = comment,
-            rating = rating
+            rating = rating,
+            imageUrl = imageUrl,
         )
 
         val result = venueReviewRepository.storeVenueReview(venueId, review)
@@ -75,4 +84,20 @@ class VenueReviewViewModel(
      */
     private suspend fun incrementVenueReviewsCount(venueId: String)
         = venueReviewRepository.incrementVenueReviewsCount(venueId)
+
+    /**
+     * Sačuvaj sliku recenzije i vrati njen URL
+     */
+    private suspend fun storeVenueReviewImage(imageUri: Uri?): String? {
+        if (imageUri == null) return null
+
+        val result = venueReviewRepository.storeVenueReviewImage(imageUri)
+        if (result.isSuccess) {
+            println("Successfully stored review image with url: ${result.getOrNull()}")
+        } else {
+            println("Failed to store review image with message: ${result.exceptionOrNull()?.message}")
+        }
+
+        return result.getOrThrow()
+    }
 }

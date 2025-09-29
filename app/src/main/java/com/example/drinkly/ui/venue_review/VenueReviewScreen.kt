@@ -1,30 +1,35 @@
 package com.example.drinkly.ui.venue_review
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale.Companion.Crop
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drinkly.data.model.Review
 import com.example.drinkly.ui.components.Avatar
+import com.example.drinkly.ui.components.Image
+import com.example.drinkly.ui.profile.ImageUploadInput
 import com.example.drinkly.ui.venue.VenueReviewViewModel
 import com.example.drinkly.ui.theme.AppColorBg
 import com.example.drinkly.ui.theme.AppColorBorder
@@ -50,12 +55,14 @@ fun VenueReviewScreen(
     var newReviewRating by remember { mutableStateOf(5) }
     var newReviewTitle by remember { mutableStateOf("") }
     var newReviewComment by remember { mutableStateOf("") }
+    var newImageUri by remember { mutableStateOf<Uri?>(null) }
 
     fun resetFormAndClose() {
         newReviewTitle = ""
         newReviewComment = ""
         newReviewRating = 5
         showReviewForm = false
+        newImageUri = null
     }
 
     val coroutineScope = rememberCoroutineScope()
@@ -63,7 +70,7 @@ fun VenueReviewScreen(
     fun handleSubmitReview() {
         venueId?.let {
             coroutineScope.launch {
-                venueReviewViewModel.submitReview(it, newReviewTitle, newReviewComment, newReviewRating)
+                venueReviewViewModel.submitReview(it, newReviewTitle, newReviewComment, newReviewRating, newImageUri)
                 resetFormAndClose()
             }
         }
@@ -221,6 +228,13 @@ fun VenueReviewScreen(
                                 )
                             }
 
+                            // Upload profulne slike
+                            ImageUploadInput(
+                                currentImageUri = newImageUri,
+                                onImageSelected = { uri -> newImageUri = uri },
+                                roundedCornerShape = false,
+                            )
+
                             // Buttons
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -294,6 +308,7 @@ fun ReviewCard(review: Review) {
                     // Avatar
                     Avatar(
                         initials = review.user["name"].toString().split(" ")?.map { it.first() }?.joinToString(""),
+                        imageUrl = review.user["profile_image_url"]?.toString(),
                         height = 50.dp,
                         width = 50.dp
                     )
@@ -337,8 +352,23 @@ fun ReviewCard(review: Review) {
                 lineHeight = 20.sp,
                 modifier = Modifier
                     .padding(top = 12.dp)
-                    .padding(start = 52.dp)
             )
+
+            // Review image
+            if (review.imageUrl != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Image(
+                    imageUrl = review.imageUrl,
+                    description = review.title,
+                    height = 200.dp,
+                    width = 150.dp,
+                    topRounded = 5.dp,
+                    bottomRounded = 5.dp,
+                    scale = Crop,
+                    roundedCornerShape = true,
+                )
+            }
         }
     }
 }
