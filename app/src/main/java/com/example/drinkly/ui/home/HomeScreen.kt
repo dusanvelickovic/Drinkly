@@ -1,14 +1,18 @@
 package com.example.drinkly.ui.home
 
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +31,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -87,7 +92,9 @@ fun HomeScreen(
         }
     }
 
-    // Map settings - sakrij POI
+    var mapType by remember { mutableStateOf(MapType.NORMAL) }
+
+    // Map settings
     val mapStyleOptions = remember {
         MapStyleOptions(
             """
@@ -164,7 +171,8 @@ fun HomeScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(
                     isMyLocationEnabled = hasLocationPermission && userLocation != null,
-                    mapStyleOptions = mapStyleOptions
+                    mapStyleOptions = mapStyleOptions,
+                    mapType = mapType
                 )
             ) {
                 val originalBitmap = BitmapFactory.decodeResource(context.resources, com.example.drinkly.R.drawable.glass_icon)
@@ -183,14 +191,24 @@ fun HomeScreen(
                         title = venue.name,
                         snippet = venue.category,
                         onClick = { marker ->
-                            // Pozovi funkciju za otvaranje bottom sheet-a
                             onMarkerClick(venue)
-                            true // Vrati true da konzumiraš click event
+                            true
                         },
                         icon = icon,
                     )
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+        ) {
+            MapTypeIconButtons(
+                currentMapType = mapType,
+                onMapTypeChange = { newType -> mapType = newType }
+            )
         }
 
         // Modal Bottom Sheet
@@ -231,5 +249,51 @@ fun HomeScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun MapTypeIconButtons(
+    currentMapType: MapType,
+    onMapTypeChange: (MapType) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SmallMapTypeButton(
+            icon = Icons.Default.Map,
+            isSelected = currentMapType == MapType.NORMAL,
+            onClick = { onMapTypeChange(MapType.NORMAL) }
+        )
+        SmallMapTypeButton(
+            icon = Icons.Default.Satellite,
+            isSelected = currentMapType == MapType.SATELLITE,
+            onClick = { onMapTypeChange(MapType.SATELLITE) }
+        )
+        SmallMapTypeButton(
+            icon = Icons.Default.Layers,
+            isSelected = currentMapType == MapType.HYBRID,
+            onClick = { onMapTypeChange(MapType.HYBRID) }
+        )
+    }
+}
+
+@Composable
+fun SmallMapTypeButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = if (isSelected) Color(0xFFFF6B35) else Color.White,
+        contentColor = if (isSelected) Color.White else Color.Black,
+        modifier = Modifier.size(40.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }

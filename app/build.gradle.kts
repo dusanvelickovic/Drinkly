@@ -99,6 +99,17 @@ dependencies {
 
     // Location services
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    // Google Maps Compose library
+    val mapsComposeVersion = "4.4.1"
+    implementation("com.google.maps.android:maps-compose:$mapsComposeVersion")
+    // Google Maps Compose utility library
+    implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
+    // Google Maps Compose widgets library
+    implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
+
+    // Material icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 }
 
 secrets {

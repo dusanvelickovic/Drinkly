@@ -25,6 +25,7 @@ import com.example.drinkly.ui.register.RegisterViewModel
 import com.example.drinkly.viewmodel.AuthViewModel
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -46,7 +47,7 @@ fun AppNavigation(
         BottomNavItem("home", "Home", Icons.Default.Home),
         BottomNavItem("search", "Search", Icons.Default.Search),
         BottomNavItem("profile", "Profile", Icons.Default.Person),
-        BottomNavItem("leaderboard", "Leaderboard", Icons.Default.Menu)
+        BottomNavItem("leaderboard", "Leaderboard", Icons.Default.Leaderboard)
     )
 
     Scaffold(
