@@ -77,6 +77,7 @@ class VenueReviewRepository(
                 "rating" to review.rating,
                 "date" to review.date,
                 "image_url" to review.imageUrl,
+                "verified" to review.verified,
             )
 
             val documentRef = firestore.collection("venues")
@@ -96,7 +97,7 @@ class VenueReviewRepository(
     /**
      * Inkrementiraj broj recenzija za autentifikovanog korisnika
      */
-    suspend fun incrementUserReviewsPosted(): Result<Void?> {
+    suspend fun incrementUserReviewsPosted(value: Int): Result<Void?> {
         val userUid = FirebaseAuth.getInstance().currentUser?.uid
             ?: return Result.failure(Exception("User not authenticated"))
 
@@ -106,7 +107,7 @@ class VenueReviewRepository(
             firestore.runTransaction { transaction ->
                 val snapshot = transaction.get(userRef)
                 val currentCount = snapshot.getLong("reviews_posted") ?: 0
-                transaction.update(userRef, "reviews_posted", currentCount + 1)
+                transaction.update(userRef, "reviews_posted", currentCount + value)
             }.await()
 
             println("Successfully incremented reviewsPosted for user: $userUid")

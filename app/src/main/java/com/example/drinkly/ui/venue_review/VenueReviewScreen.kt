@@ -14,15 +14,19 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale.Companion.Crop
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drinkly.DrinklyApplication
 import com.example.drinkly.data.model.Review
 import com.example.drinkly.ui.components.Avatar
 import com.example.drinkly.ui.components.Image
@@ -40,12 +44,17 @@ fun VenueReviewScreen(
     onBackClick: () -> Unit = { },
     venueReviewViewModel: VenueReviewViewModel = viewModel(),
 ) {
-    val reviews by venueReviewViewModel.reviewsFlow.collectAsState(initial = Result.success(emptyList()))
+    // Venue reviews state
+    val reviewsResult by venueReviewViewModel.reviewsFlow.collectAsState(initial = null)
     LaunchedEffect(venueId) {
         venueId?.let {
             venueReviewViewModel.observeReviewsForVenue(it)
         }
     }
+
+    // Live user location
+    val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
+    val userLocation by locationViewModel.location.observeAsState()
 
     // State za prikaz forme za dodavanje recenzije
     var showReviewForm by remember { mutableStateOf(false) }
@@ -67,7 +76,14 @@ fun VenueReviewScreen(
     fun handleSubmitReview() {
         venueId?.let {
             coroutineScope.launch {
-                venueReviewViewModel.submitReview(it, newReviewTitle, newReviewComment, newReviewRating, newImageUri)
+                venueReviewViewModel.submitReview(
+                    venueId = it,
+                    title = newReviewTitle,
+                    comment = newReviewComment,
+                    rating = newReviewRating,
+                    imageUri = newImageUri,
+                    userLocation = userLocation
+                )
                 resetFormAndClose()
             }
         }
@@ -104,179 +120,188 @@ fun VenueReviewScreen(
             )
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                // Add Review Button
-                if (!showReviewForm) {
-                    Button(
-                        onClick = { showReviewForm = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppColorOrange
-                        ),
-                        shape = RoundedCornerShape(8.dp),
-                    ) {
-                        Text(
-                            text = "Write a Review",
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
-                }
+        if (reviewsResult == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = AppColorOrange)
             }
-
-            // Forma za dodavanje recenzije
-            if (showReviewForm) {
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 item {
-                    // Review Form
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                    // Add Review Button
+                    if (!showReviewForm) {
+                        Button(
+                            onClick = { showReviewForm = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppColorOrange
+                            ),
+                            shape = RoundedCornerShape(8.dp),
                         ) {
                             Text(
-                                text = "Leave a Review",
-                                fontSize = 16.sp,
+                                text = "Write a Review",
+                                color = Color.White,
                                 fontWeight = FontWeight.Medium,
-                                color = Color.Black
+                                modifier = Modifier.padding(vertical = 4.dp)
                             )
+                        }
+                    }
+                }
 
-                            // Rating
-                            Column {
+                // Forma za dodavanje recenzije
+                if (showReviewForm) {
+                    item {
+                        // Review Form
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(8.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.5f.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                                 Text(
-                                    text = "Rating",
-                                    fontSize = 14.sp,
+                                    text = "Leave a Review",
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.Black,
-                                    modifier = Modifier.padding(bottom = 8.dp)
+                                    color = Color.Black
                                 )
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    repeat(5) { index ->
-                                        Icon(
-                                            imageVector = if (index < newReviewRating) Icons.Filled.Star else Icons.Outlined.Star,
-                                            contentDescription = "Star ${index + 1}",
-                                            tint = if (index < newReviewRating) AppColorOrange else Color.LightGray,
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clickable { newReviewRating = index + 1 }
-                                        )
+                                // Rating
+                                Column {
+                                    Text(
+                                        text = "Rating",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.Black,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        repeat(5) { index ->
+                                            Icon(
+                                                imageVector = if (index < newReviewRating) Icons.Filled.Star else Icons.Outlined.Star,
+                                                contentDescription = "Star ${index + 1}",
+                                                tint = if (index < newReviewRating) AppColorOrange else Color.LightGray,
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .clickable { newReviewRating = index + 1 }
+                                            )
+                                        }
                                     }
                                 }
-                            }
 
-                            // Title
-                            Column {
-                                Text(
-                                    text = "Review Title",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.Black,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
-
-                                OutlinedTextField(
-                                    value = newReviewTitle,
-                                    onValueChange = { newReviewTitle = it },
-                                    placeholder = { Text("Give your review a title") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = AppColorBorder,
-                                        cursorColor = AppColorBorder,
-                                        unfocusedBorderColor = AppColorBorder,
-                                    ),
-                                    shape = RoundedCornerShape(12.dp),
-                                )
-                            }
-
-                            // Comment
-                            Column {
-                                Text(
-                                    text = "Your Review",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.Black,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
-
-                                OutlinedTextField(
-                                    value = newReviewComment,
-                                    onValueChange = { newReviewComment = it },
-                                    placeholder = { Text("Tell others about your experience...") },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(120.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = AppColorBorder,
-                                        cursorColor = AppColorBorder,
-                                        unfocusedBorderColor = AppColorBorder,
-                                    ),
-                                    shape = RoundedCornerShape(12.dp),
-                                )
-                            }
-
-                            // Upload profulne slike
-                            ImageUploadInput(
-                                currentImageUri = newImageUri,
-                                onImageSelected = { uri -> newImageUri = uri },
-                                roundedCornerShape = false,
-                            )
-
-                            // Buttons
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                OutlinedButton(
-                                    onClick = { showReviewForm = false },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color.DarkGray,
-                                        containerColor = Color.White,
-                                    ),
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = AppColorBorder
+                                // Title
+                                Column {
+                                    Text(
+                                        text = "Review Title",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.Black,
+                                        modifier = Modifier.padding(bottom = 8.dp)
                                     )
-                                ) {
-                                    Text("Cancel")
+
+                                    OutlinedTextField(
+                                        value = newReviewTitle,
+                                        onValueChange = { newReviewTitle = it },
+                                        placeholder = { Text("Give your review a title") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = AppColorBorder,
+                                            cursorColor = AppColorBorder,
+                                            unfocusedBorderColor = AppColorBorder,
+                                        ),
+                                        shape = RoundedCornerShape(12.dp),
+                                    )
                                 }
 
-                                Button(
-                                    onClick = { handleSubmitReview() },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = AppColorOrange
+                                // Comment
+                                Column {
+                                    Text(
+                                        text = "Your Review",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.Black,
+                                        modifier = Modifier.padding(bottom = 8.dp)
                                     )
+
+                                    OutlinedTextField(
+                                        value = newReviewComment,
+                                        onValueChange = { newReviewComment = it },
+                                        placeholder = { Text("Tell others about your experience...") },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(120.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = AppColorBorder,
+                                            cursorColor = AppColorBorder,
+                                            unfocusedBorderColor = AppColorBorder,
+                                        ),
+                                        shape = RoundedCornerShape(12.dp),
+                                    )
+                                }
+
+                                // Upload profulne slike
+                                ImageUploadInput(
+                                    currentImageUri = newImageUri,
+                                    onImageSelected = { uri -> newImageUri = uri },
+                                    roundedCornerShape = false,
+                                )
+
+                                // Buttons
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                    OutlinedButton(
+                                        onClick = { resetFormAndClose() },
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = Color.DarkGray,
+                                            containerColor = Color.White,
+                                        ),
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = AppColorBorder
+                                        )
                                     ) {
-                                        Text("Submit Review")
+                                        Text("Cancel")
+                                    }
+
+                                    Button(
+                                        onClick = { handleSubmitReview() },
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = AppColorOrange
+                                        )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text("Submit Review")
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Prikaz recenzije
-            reviews.onSuccess { reviews ->
-                // Reviews List
-                items(reviews) { review ->
-                    ReviewCard(review = review)
+                // Prikaz recenzije
+                reviewsResult?.onSuccess { reviews ->
+                    // Reviews List
+                    items(reviews) { review ->
+                        ReviewCard(review = review)
+                    }
                 }
             }
         }

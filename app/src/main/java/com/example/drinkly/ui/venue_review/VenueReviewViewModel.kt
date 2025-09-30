@@ -1,5 +1,6 @@
 package com.example.drinkly.ui.venue
 
+import android.location.Location
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,18 +34,36 @@ class VenueReviewViewModel(
     /**
      * Postavi recenziju za dati venueId
      */
-    fun submitReview(venueId: String, title: String, comment: String, rating: Int, imageUri: Uri?) {
+    fun submitReview(
+        venueId: String,
+        title: String,
+        comment: String,
+        rating: Int,
+        imageUri: Uri?,
+        userLocation: Location?,
+    ) {
         viewModelScope.launch {
             // Sačuvaj sliku recenzije ako postoji
             val imageUrl: String? = storeVenueReviewImage(imageUri)
 
             println("Review image URL: $imageUrl")
 
+            // Proveri da li je korisnik u blizini venue-a (npr. unutar 50 metara)
+            val verified = if (calculateDistance(userLocation, venueId) <= 50) {
+                true
+            } else {
+                false
+            }
+
             // Sačuvaj recenziju
-            storeVenueReview(venueId, title, comment, rating, imageUrl)
+            storeVenueReview(venueId, title, comment, rating, imageUrl, verified)
 
             recalculateVenueRating(venueId)
-            incrementUserReviewsPosted()
+
+            // Inkrementiraj broj postavljenih recenzija za korisnika
+            val incrementValue = if (verified) 2 else 1
+            incrementUserReviewsPosted(incrementValue)
+
             incrementVenueReviewsCount(venueId)
         }
     }
@@ -52,13 +71,21 @@ class VenueReviewViewModel(
     /**
      * Sačuvaj recenziju za dati venueId
      */
-    private suspend fun storeVenueReview(venueId: String, title: String, comment: String, rating: Int, imageUrl: String?) {
+    private suspend fun storeVenueReview(
+        venueId: String,
+        title: String,
+        comment: String,
+        rating: Int,
+        imageUrl: String?,
+        verified: Boolean,
+    ) {
         val review = Review(
             userUid = AuthRepository().getAuthUser().getOrThrow()?.uid ?: "",
             title = title,
             comment = comment,
             rating = rating,
             imageUrl = imageUrl,
+            verified = verified,
         )
 
         val result = venueReviewRepository.storeVenueReview(venueId, review)
@@ -77,7 +104,7 @@ class VenueReviewViewModel(
     /**
      * Inkrementiraj broj postavljenih recenzija za korisnika
      */
-    private suspend fun incrementUserReviewsPosted() = venueReviewRepository.incrementUserReviewsPosted()
+    private suspend fun incrementUserReviewsPosted(value: Int) = venueReviewRepository.incrementUserReviewsPosted(value)
 
     /**
      * Inkrementiraj broj recenzija za dati venueId
@@ -99,5 +126,28 @@ class VenueReviewViewModel(
         }
 
         return result.getOrThrow()
+    }
+
+    /**
+     * Izračunaj udaljenost korisnika od venue
+     */
+    private suspend fun calculateDistance(userLocation: Location?, venueId: String): Float {
+        if (userLocation == null) return Float.MAX_VALUE
+
+        val venueResult = venueRepository.getVenueById(venueId)
+        if (venueResult.isSuccess) {
+            val venue = venueResult.getOrNull()
+            if (venue != null) {
+                val venueLocation = Location("").apply {
+                    latitude = venue.location.latitude
+                    longitude = venue.location.longitude
+                }
+                return userLocation.distanceTo(venueLocation)
+            }
+        } else {
+            println("Failed to fetch venue for distance calculation: ${venueResult.exceptionOrNull()?.message}")
+        }
+
+        return Float.MAX_VALUE
     }
 }
