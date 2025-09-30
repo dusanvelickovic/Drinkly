@@ -5,12 +5,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -325,43 +328,59 @@ fun ReviewCard(review: Review) {
                 verticalAlignment = Alignment.Top
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Avatar
-                    Avatar(
-                        initials = review.user["name"].toString().split(" ")?.map { it.first() }?.joinToString(""),
-                        imageUrl = review.user["profile_image_url"]?.toString(),
-                        height = 50.dp,
-                        width = 50.dp
-                    )
-
-                    Column {
-                        Text(
-                            text = (review.user["name"]?.toString() ?: "") + " - " + review.getDateFormatted(),
-                            fontSize = 12.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        // Avatar
+                        Avatar(
+                            initials = review.user["name"].toString().split(" ")?.map { it.first() }?.joinToString(""),
+                            imageUrl = review.user["profile_image_url"]?.toString(),
+                            height = 50.dp,
+                            width = 50.dp
                         )
 
-                        Text(
-                            text = review.title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
+                        Column {
+                            Text(
+                                text = (review.user["name"]?.toString() ?: "") + " - " + review.getDateFormatted(),
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
 
-                        // Rejting
-                        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                            repeat(5) { index ->
-                                Icon(
-                                    imageVector = if (index < review.rating) Icons.Filled.Star else Icons.Outlined.Star,
-                                    contentDescription = null,
-                                    tint = if (index < review.rating) AppColorOrange else Color.Gray,
-                                    modifier = Modifier.size(14.dp)
-                                )
+                            Text(
+                                text = review.title,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+
+                            // Rejting
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                repeat(5) { index ->
+                                    Icon(
+                                        imageVector = if (index < review.rating) Icons.Filled.Star else Icons.Outlined.Star,
+                                        contentDescription = null,
+                                        tint = if (index < review.rating) AppColorOrange else Color.Gray,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
                             }
                         }
+                    }
+
+                    if (review.verified == true) {
+                        Icon(
+                            imageVector = Icons.Default.Verified,
+                            contentDescription = "Verified Review",
+                            tint = AppColorOrange,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
