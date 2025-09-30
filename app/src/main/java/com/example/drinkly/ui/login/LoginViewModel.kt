@@ -25,7 +25,7 @@ class LoginViewModel(
             _loginState.value = if (result.isSuccess) {
                 "Success"
             } else {
-                result.exceptionOrNull()?.message ?: "Login failed"
+                "Provided credentials do not match our records."
             }
         }
     }

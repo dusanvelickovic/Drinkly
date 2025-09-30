@@ -23,7 +23,7 @@ class RegisterViewModel(
             _registerState.value = if (result.isSuccess) {
                 "Success"
             } else {
-                result.exceptionOrNull()?.message ?: "Registration failed"
+                "Registration failed."
             }
         }
     }

@@ -181,19 +181,16 @@ fun LoginScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (message.contains("Error") || message.contains(
-                                        "Failed"
-                                    )
-                                )
-                                    Color(0xFFFFEBEE) else Color(0xFFE8F5E8)
+                                containerColor = if (message.contains("Success"))
+                                    Color(0xFFE8F5E8) else Color(0xFFFFEBEE)
                             )
                         ) {
                             Text(
                                 text = message,
                                 modifier = Modifier.padding(12.dp),
                                 fontSize = 14.sp,
-                                color = if (message.contains("Error") || message.contains("Failed"))
-                                    Color(0xFFD32F2F) else Color(0xFF2E7D32)
+                                color = if (message.contains("Success"))
+                                    Color(0xFF2E7D32) else Color(0xFFD32F2F)
                             )
                         }
                     }

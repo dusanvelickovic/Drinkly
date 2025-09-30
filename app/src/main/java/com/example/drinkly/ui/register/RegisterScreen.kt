@@ -33,7 +33,7 @@ fun RegisterScreen(
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
-//    val registerState by viewModel.registerState.collectAsState()
+    val registerState by viewModel.registerState.collectAsState()
     val registerSuccess by viewModel.registerSuccess.collectAsState()
 
     if (registerSuccess) {
@@ -205,6 +205,26 @@ fun RegisterScreen(
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
+                    }
+
+                    // Show register state message
+                    registerState?.let { message ->
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (message.contains("Success"))
+                                    Color(0xFFE8F5E8) else Color(0xFFFFEBEE)
+                            )
+                        ) {
+                            Text(
+                                text = message,
+                                modifier = Modifier.padding(12.dp),
+                                fontSize = 14.sp,
+                                color = if (message.contains("Success"))
+                                    Color(0xFF2E7D32) else Color(0xFFD32F2F)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
