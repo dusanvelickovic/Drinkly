@@ -44,6 +44,7 @@ import com.example.drinkly.ui.theme.AppColorBorder
 import com.example.drinkly.ui.theme.AppColorGray
 import com.example.drinkly.ui.theme.AppColorOrange
 import com.example.drinkly.viewmodel.AuthViewModel
+import kotlinx.coroutines.delay
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,11 +62,11 @@ fun SearchScreen(
     }
 
     // Determine greeting based on current time
-     val greeting = when (val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-         in 5..11 -> "Good Morning!"
-         in 12..17 -> "Good Afternoon!"
-         else -> "Good Evening!"
-     }
+    val greeting = when (val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 5..11 -> "Good Morning!"
+        in 12..17 -> "Good Afternoon!"
+        else -> "Good Evening!"
+    }
 
     // Live user location
     val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
@@ -86,6 +87,17 @@ fun SearchScreen(
             searchQuery = searchQuery,
             radius = selectedRadius.toIntOrNull() ?: 0,
             userLocation
+        )
+    }
+
+    // Debounced search when searchQuery changes
+    LaunchedEffect(searchQuery) {
+        delay(500L) // Wait for 500ms of inactivity
+        searchViewModel.searchVenues(
+            category = selectedCategory,
+            searchQuery = searchQuery,
+            radius = selectedRadius.toIntOrNull() ?: 0,
+            userLocation = userLocation
         )
     }
 
@@ -152,7 +164,7 @@ fun SearchScreen(
                         onValueChange = { searchQuery = it },
                         placeholder = {
                             Text(
-                                text = "Search venues..",
+                                text = "Search venues...",
                                 color = Color(0xFF636E72)
                             )
                         },
@@ -168,12 +180,7 @@ fun SearchScreen(
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                searchViewModel.searchVenues(
-                                    category = selectedCategory,
-                                    searchQuery = searchQuery,
-                                    radius = selectedRadius.toIntOrNull() ?: 0,
-                                    userLocation = userLocation
-                                )
+                                // Search is now handled by LaunchedEffect
                             }
                         ),
                         colors = TextFieldDefaults.colors(
@@ -358,7 +365,7 @@ fun VenueCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(190.dp)
-                       .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)),
+                        .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
