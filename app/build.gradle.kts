@@ -110,6 +110,9 @@ dependencies {
 
     // Material icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // For the notification UI icons
+    implementation("androidx.appcompat:appcompat:1.6.1")
 }
 
 secrets {

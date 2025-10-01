@@ -9,7 +9,7 @@ class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     /**
-     * Pretrazi venue po kategoriji i/ili imenu
+     * Search venues by category, name, and optional radius from user's location.
      */
     suspend fun searchVenues(
         category: String = "all",
@@ -59,7 +59,7 @@ class VenueRepository(
     }
 
     /**
-     * Dobavi venue po id
+     * Fetch venue by its ID
      */
     suspend fun getVenueById(
         id: String
@@ -80,7 +80,7 @@ class VenueRepository(
     }
 
     /**
-     * Rekalkuliši prosečnu ocenu za dati venueId na osnovu svih recenzija
+     * Recalculate average rating for a venue based on its reviews.
      */
     suspend fun recalculateVenueRating(venueId: String): Result<Void?> = try {
         val venueRef = firestore.collection("venues").document(venueId)
@@ -104,7 +104,7 @@ class VenueRepository(
     }
 
     /**
-     * Filtriraj venue po udaljenosti od korisnika
+     * Filter venues based on distance from user's location.
      */
     fun filterVenuesByDistance(
         venues: List<Venue>,
@@ -123,5 +123,56 @@ class VenueRepository(
                 results[0] <= radius * 1000 // radius je u km, distanceBetween vraća u metrima
             }
         }
+    }
+
+    /**
+     * Fetch venues that are nearby the user's current location.
+     * This is a placeholder function and should be implemented as needed.
+     */
+    suspend fun fetchNearbyVenues(
+        userLocation: Location,
+        radiusInMeters: Int
+    ): Result<List<Venue>> = try {
+        // Fetch all venue documents
+        val snapshot = firestore.collection("venues").get().await()
+
+        // Map documents to Venue objects
+        val venues = snapshot.documents.mapNotNull { document ->
+            try {
+                // Correctly convert the document to the Venue data class
+                val venue = document.toObject(Venue::class.java)
+
+                // Set the document ID (the venue's unique ID)
+                venue?.apply { id = document.id }
+                venue
+            } catch (e: Exception) {
+                println("Failed to convert document ${document.id}: ${e.message}")
+                null
+            }
+        }
+
+        // Filter venues based on distance
+        val nearbyVenues = venues.filter { venue ->
+            // Ensure the venue has a valid GeoPoint location
+            venue.location?.let { geoPoint ->
+                val results = FloatArray(1)
+
+                // Calculate distance between the user's location and the venue's location
+                Location.distanceBetween(
+                    userLocation.latitude,
+                    userLocation.longitude,
+                    geoPoint.latitude, // Venue latitude from GeoPoint
+                    geoPoint.longitude, // Venue longitude from GeoPoint
+                    results
+                )
+                // Check if the distance is within the specified radius
+                results[0] <= radiusInMeters
+            } ?: false // If location is null, treat it as not nearby
+        }
+
+        Result.success(nearbyVenues)
+    } catch (e: Exception) {
+        println("Failed to fetch nearby venues: ${e.message}")
+        Result.failure(e)
     }
 }

@@ -7,6 +7,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.tasks.await
 
 class AuthRepository(
@@ -14,8 +15,7 @@ class AuthRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     /**
-     * Registruj novog korisnika sa email-om, lozinkom, imenom i telefonom.
-     * Nakon uspešne registracije, dodatni podaci se čuvaju u Firestore.
+     * Register user with email and password.
      */
     suspend fun register(
         email: String,
@@ -55,7 +55,7 @@ class AuthRepository(
     }
 
     /**
-     * Prijavi korisnika sa email-om i lozinkom.
+     * Sign in user with email and password.
      */
     suspend fun login(email: String, password: String): Result<Unit> {
         return try {
@@ -67,7 +67,7 @@ class AuthRepository(
     }
 
     /**
-     * Dohvati podatke o trenutno ulogovanom korisniku.
+     * Fetch the currently authenticated user's details from Firestore.
      */
     suspend fun getAuthUser(): Result<User?> = try {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: throw Exception("User not authenticated")
@@ -83,14 +83,14 @@ class AuthRepository(
     }
 
     /**
-     * Proveri da li je korisnik ulogovan.
+     * Check if user is authenticated.
      */
     fun checkAuth(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
     }
 
     /**
-     * Izmeni korisničke podatke.
+     * Update user details like name, email, phone, and bio.
      */
     suspend fun updateUser(name: String, email: String, phone: String, bio: String): Result<Unit> {
         val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
@@ -113,7 +113,7 @@ class AuthRepository(
     }
 
     /**
-     * Izmeni korisničku sliku.
+     * Update user profile image.
      */
     suspend fun updateUserProfileImage(imageUri: Uri): Result<String> {
         val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
@@ -138,7 +138,7 @@ class AuthRepository(
     }
 
     /**
-     * Ukloni korisničku sliku.
+     * Remove user profile image.
      */
     suspend fun removeUserImage(): Result<String> {
         val currentUser: FirebaseUser =
@@ -157,7 +157,25 @@ class AuthRepository(
     }
 
     /**
-     * Izloguj korisnika.
+     * Update user location.
+     */
+    suspend fun updateUserLocation(location: GeoPoint, lastActiveAt: Timestamp) : Result<Unit> {
+        val currentUser: FirebaseUser = firebaseAuth.currentUser ?: return Result.failure(Exception("User not authenticated"))
+
+        return try {
+            firestore.collection("users")
+                .document(currentUser.uid)
+                .update(mapOf("location" to location, "last_active_at" to lastActiveAt))
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Log out user
      */
     fun logout() {
         firebaseAuth.signOut()

@@ -28,11 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import com.example.drinkly.viewmodel.AuthViewModel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.drinkly.data.model.User
 import com.example.drinkly.ui.components.Avatar
 import com.example.drinkly.ui.theme.AppColorBg
-import com.example.drinkly.ui.theme.AppColorOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

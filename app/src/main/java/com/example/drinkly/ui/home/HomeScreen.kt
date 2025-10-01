@@ -1,20 +1,26 @@
 package com.example.drinkly.ui.home
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -37,6 +43,8 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import androidx.core.graphics.scale
+import com.example.drinkly.DrinklyApplication
+import com.example.drinkly.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +78,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         val granted = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
         homeViewModel.updateLocationPermissionGranted(granted)
@@ -78,7 +86,7 @@ fun HomeScreen(
         if (granted) {
             homeViewModel.getUserLocation(context, fusedLocationClient)
         } else {
-            permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
         homeViewModel.fetchVenues()
@@ -118,6 +126,38 @@ fun HomeScreen(
     var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
     var isLoadingMenu by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Live user location
+    val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
+
+    // Observe the LiveData as an immutable state
+    val notificationsEnabled by locationViewModel.receiveNotifications.observeAsState(initial = false)
+
+    // Receive notifications button handler
+    fun handleNotificationsToggle(
+        context: android.content.Context,
+        enabled: Boolean
+    ) {
+        if (enabled) {
+            // Check permission
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Request permission
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    return
+                }
+            }
+            // Enable notifications
+            locationViewModel.setReceiveNotifications(true)
+        } else {
+            // Disable notifications
+            locationViewModel.setReceiveNotifications(false)
+        }
+    }
 
     // Handle klik na marker
     val onMarkerClick: (Venue) -> Unit = { venue ->
@@ -175,7 +215,7 @@ fun HomeScreen(
                     mapType = mapType
                 )
             ) {
-                val originalBitmap = BitmapFactory.decodeResource(context.resources, com.example.drinkly.R.drawable.glass_icon)
+                val originalBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.glass_icon)
                 val icon = originalBitmap?.let {
                     val scaledBitmap = it.scale(60, 100, false)
                     BitmapDescriptorFactory.fromBitmap(scaledBitmap)
@@ -200,6 +240,7 @@ fun HomeScreen(
             }
         }
 
+        // Map mode buttons
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -209,6 +250,33 @@ fun HomeScreen(
                 currentMapType = mapType,
                 onMapTypeChange = { newType -> mapType = newType }
             )
+        }
+
+        // Receive notifications button
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
+            Row {
+                FloatingActionButton(
+                    onClick = {
+                        handleNotificationsToggle(
+                            context = context,
+                            enabled = !notificationsEnabled
+                        )
+                    },
+                    containerColor = if (notificationsEnabled) Color(0xFFFF6B35) else Color.White,
+                    contentColor = if (notificationsEnabled) Color.White else Color.Black,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
 
         // Modal Bottom Sheet
@@ -224,7 +292,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .width(40.dp)
                             .height(4.dp)
-                            .background(Color.Gray, androidx.compose.foundation.shape.RoundedCornerShape(2.dp))
+                            .background(Color.Gray, RoundedCornerShape(2.dp))
                     )
                 },
             ) {
@@ -280,7 +348,7 @@ fun MapTypeIconButtons(
 
 @Composable
 fun SmallMapTypeButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
