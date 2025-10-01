@@ -10,23 +10,74 @@ import com.example.drinkly.data.repository.VenueRepository
 import com.example.drinkly.data.repository.VenueReviewRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class VenueReviewViewModel(
     private val venueReviewRepository: VenueReviewRepository = VenueReviewRepository(),
     private val venueRepository: VenueRepository = VenueRepository(),
 
-) : ViewModel() {
+    ) : ViewModel() {
+    // Holds the original list from the repository
+    private val _allReviewsFlow = MutableStateFlow<Result<List<Review>>>(Result.success(emptyList()))
+
+    // Holds the current search text
+    private val _searchText = MutableStateFlow("")
+    val searchText: StateFlow<String> = _searchText
+
+    // Holds the current sort order
+    private val _sortOrder = MutableStateFlow("newest")
+
+    // Publicly exposed, filtered and sorted list
     private val _reviewsFlow = MutableStateFlow<Result<List<Review>>>(Result.success(emptyList()))
     val reviewsFlow: StateFlow<Result<List<Review>>> = _reviewsFlow
 
-    /**
-     * Dobavi recenzije za dati venueId
-     */
-    fun observeReviewsForVenue(venueId: String) {
+    init {
         viewModelScope.launch {
-            venueReviewRepository.observeReviewsForVenue(venueId).collect { result ->
-                _reviewsFlow.value = result
+            // Combine the original reviews, search text, and sort order
+            combine(_allReviewsFlow, _searchText, _sortOrder) { result, text, sortOrder ->
+                result.map { reviews ->
+                    // 1. Filter by search text
+                    val filteredReviews = if (text.isBlank()) {
+                        reviews
+                    } else {
+                        reviews.filter { review ->
+                            review.title.contains(text, ignoreCase = true) ||
+                                    review.comment.contains(text, ignoreCase = true)
+                        }
+                    }
+
+                    // 2. Sort the filtered list
+                    when (sortOrder) {
+                        "newest" -> filteredReviews.sortedByDescending { it.date }
+                        "oldest" -> filteredReviews.sortedBy { it.date }
+                        "highest_rated" -> filteredReviews.sortedByDescending { it.rating }
+                        "lowest_rated" -> filteredReviews.sortedBy { it.rating }
+                        else -> filteredReviews
+                    }
+                }
+            }.collect { finalResult ->
+                _reviewsFlow.value = finalResult
+            }
+        }
+    }
+
+    /**
+     * Updates the search text.
+     */
+    fun onSearchTextChanged(text: String) {
+        _searchText.value = text
+    }
+
+    /**
+     * Fetches reviews for a venue and sets the sort order.
+     */
+    fun observeReviewsForVenue(venueId: String, orderBy: String) {
+        _sortOrder.value = orderBy
+        viewModelScope.launch {
+            // The repository handles the basic ordering from Firestore
+            venueReviewRepository.observeReviewsForVenue(venueId, orderBy).collect { result ->
+                _allReviewsFlow.value = result
             }
         }
     }
@@ -110,7 +161,7 @@ class VenueReviewViewModel(
      * Inkrementiraj broj recenzija za dati venueId
      */
     private suspend fun incrementVenueReviewsCount(venueId: String)
-        = venueReviewRepository.incrementVenueReviewsCount(venueId)
+            = venueReviewRepository.incrementVenueReviewsCount(venueId)
 
     /**
      * Sačuvaj sliku recenzije i vrati njen URL

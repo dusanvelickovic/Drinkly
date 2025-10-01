@@ -244,7 +244,6 @@ fun SearchScreen(
                 }
             }
 
-
             // Categories Section
             item {
                 Column {

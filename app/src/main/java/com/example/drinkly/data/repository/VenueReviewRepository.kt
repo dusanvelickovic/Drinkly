@@ -18,11 +18,21 @@ class VenueReviewRepository(
     /**
      * Dobavi recenzije za dati venueId iz firestore
      */
-    fun observeReviewsForVenue(venueId: String): Flow<Result<List<Review>>> = callbackFlow {
+    fun observeReviewsForVenue(venueId: String, orderBy: String): Flow<Result<List<Review>>> = callbackFlow {
+        val fieldToOrderBy = when (orderBy) {
+            "highest_rated", "lowest_rated" -> "rating"
+            else -> "date"
+        }
+
+        val direction = when (orderBy) {
+            "newest", "highest_rated" -> Query.Direction.DESCENDING
+            else -> Query.Direction.ASCENDING
+        }
+
         val registration = firestore.collection("venues")
             .document(venueId)
             .collection("reviews")
-            .orderBy("date", Query.Direction.DESCENDING)
+            .orderBy(fieldToOrderBy, direction)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(Result.failure(error))

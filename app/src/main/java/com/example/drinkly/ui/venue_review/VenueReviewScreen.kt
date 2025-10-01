@@ -49,9 +49,23 @@ fun VenueReviewScreen(
 ) {
     // Venue reviews state
     val reviewsResult by venueReviewViewModel.reviewsFlow.collectAsState(initial = null)
-    LaunchedEffect(venueId) {
+
+    // State for filters
+    val searchText by venueReviewViewModel.searchText.collectAsState()
+    var selectedFilter by remember { mutableStateOf("Newest") }
+    val filterOptions = listOf("Newest", "Oldest", "Highest Rated", "Lowest Rated")
+
+    // Observe reviews when venueId or filter changes
+    LaunchedEffect(venueId, selectedFilter) {
         venueId?.let {
-            venueReviewViewModel.observeReviewsForVenue(it)
+            val orderBy = when (selectedFilter) {
+                "Newest" -> "newest"
+                "Oldest" -> "oldest"
+                "Highest Rated" -> "highest_rated"
+                "Lowest Rated" -> "lowest_rated"
+                else -> "newest"
+            }
+            venueReviewViewModel.observeReviewsForVenue(venueId = it, orderBy = orderBy)
         }
     }
 
@@ -299,11 +313,64 @@ fun VenueReviewScreen(
                     }
                 }
 
+                // Filters section
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Text input for search
+                        OutlinedTextField(
+                            value = searchText,
+                            onValueChange = { venueReviewViewModel.onSearchTextChanged(it) },
+                            placeholder = { Text("Search in reviews...") },
+                            modifier = Modifier.fillMaxWidth().background(Color.White),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = AppColorBorder,
+                                cursorColor = AppColorBorder,
+                                unfocusedBorderColor = AppColorBorder,
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                        )
+
+                        // Date filter buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            filterOptions.forEach { filter ->
+                                Button(
+                                    onClick = { selectedFilter = filter },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (selectedFilter == filter) AppColorOrange else Color.White,
+                                        contentColor = if (selectedFilter == filter) Color.White else Color.DarkGray
+                                    ),
+                                    border = if (selectedFilter != filter) BorderStroke(1.dp, AppColorBorder) else null,
+                                    shape = RoundedCornerShape(20.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                ) {
+                                    Text(text = filter, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Prikaz recenzije
                 reviewsResult?.onSuccess { reviews ->
                     // Reviews List
-                    items(reviews) { review ->
-                        ReviewCard(review = review)
+                    if (reviews.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No reviews found.",
+                                modifier = Modifier.padding(16.dp),
+                                color = Color.Gray
+                            )
+                        }
+                    } else {
+                        items(reviews) { review ->
+                            ReviewCard(review = review)
+                        }
                     }
                 }
             }
