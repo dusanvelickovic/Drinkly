@@ -189,16 +189,16 @@ class VenueRepository(
         imageUrl: String,
         location: GeoPoint
     ): Result<String> = try {
-        val newVenue = Venue(
-            name = name,
-            description = description,
-            address = address,
-            phone = phone,
-            category = category,
-            imageUrl = imageUrl,
-            location = location,
-            rating = 0.0,
-            reviewsCount = 0
+        val newVenue = hashMapOf(
+            "name" to name,
+            "description" to description,
+            "address" to address,
+            "phone" to phone,
+            "category" to category,
+            "image_url" to imageUrl,
+            "location" to location,
+            "rating" to 0.0,
+            "reviews_count" to 0
         )
 
         val documentRef = firestore.collection("venues")
