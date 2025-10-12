@@ -147,7 +147,7 @@ class LocationHelper(private val context: Context) {
         val venueRepository = VenueRepository()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val result = venueRepository.fetchNearbyVenues(location, 5000)
+            val result = venueRepository.fetchNearbyVenues(location, 200)
             result.onSuccess { venues ->
                 val nearbyVenues = venueRepository.filterVenuesByDistance(
                     venues,

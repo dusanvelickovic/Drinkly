@@ -50,6 +50,7 @@ import com.example.drinkly.DrinklyApplication
 import com.example.drinkly.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.firebase.firestore.GeoPoint
+import kotlin.text.category
 
 @SuppressLint("LocalContextResourcesRead")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +60,9 @@ fun HomeScreen(
     navController: NavController,
     openedVenue: Venue? = null
 ) {
-    val cameraPositionState = rememberCameraPositionState()
+    // Live user location
+    val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
+    val cameraPositionState = locationViewModel.cameraPositionState
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -150,13 +153,12 @@ fun HomeScreen(
         homeViewModel.fetchVenues()
     }
 
-    // Postavi kameru kada se učita korisnikova lokacija
+    // Set camera to user's location on first launch
     LaunchedEffect(userLocation) {
         userLocation?.let { loc ->
-            // Only set initial position if no location is passed via navigation
-            if (openedVenue == null) {
+            if (!locationViewModel.isInitialPositionSet && openedVenue == null) {
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(loc, 15f)
-                println("Kamera pozicionirana na: ${loc.latitude}, ${loc.longitude}")
+                locationViewModel.isInitialPositionSet = true
             }
         }
     }
@@ -185,9 +187,6 @@ fun HomeScreen(
             """.trimIndent()
         )
     }
-
-    // Live user location
-    val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
 
     // Observe the LiveData as an immutable state
     val notificationsEnabled by locationViewModel.receiveNotifications.observeAsState(initial = false)
