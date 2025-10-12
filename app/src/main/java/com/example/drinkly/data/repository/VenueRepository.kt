@@ -3,6 +3,7 @@ package com.example.drinkly.data.repository
 import android.location.Location
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.drinkly.data.model.Venue
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.tasks.await
 
 class VenueRepository(
@@ -173,6 +174,40 @@ class VenueRepository(
         Result.success(nearbyVenues)
     } catch (e: Exception) {
         println("Failed to fetch nearby venues: ${e.message}")
+        Result.failure(e)
+    }
+
+    /**
+     * Stores a new venue in Firestore, optionally uploading an image to Firebase Storage.
+     */
+    suspend fun storeVenue(
+        name: String,
+        description: String,
+        address: String,
+        phone: String,
+        category: String,
+        imageUrl: String,
+        location: GeoPoint
+    ): Result<String> = try {
+        val newVenue = Venue(
+            name = name,
+            description = description,
+            address = address,
+            phone = phone,
+            category = category,
+            imageUrl = imageUrl,
+            location = location,
+            rating = 0.0,
+            reviewsCount = 0
+        )
+
+        val documentRef = firestore.collection("venues")
+            .add(newVenue)
+            .await()
+
+        Result.success(documentRef.id)
+    } catch (e: Exception) {
+        println("Failed to store venue: ${e.message}")
         Result.failure(e)
     }
 }

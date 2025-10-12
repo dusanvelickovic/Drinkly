@@ -1,6 +1,7 @@
 package com.example.drinkly.ui.home
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +31,7 @@ import androidx.navigation.NavController
 import com.example.drinkly.data.enum.MenuItemCategory
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
+import com.example.drinkly.ui.components.CreateVenueBottomSheet
 import com.example.drinkly.ui.components.VenueBottomSheet
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -48,6 +51,7 @@ import com.example.drinkly.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.firebase.firestore.GeoPoint
 
+@SuppressLint("LocalContextResourcesRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -63,10 +67,14 @@ fun HomeScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = false
     )
+    val createVenueBottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     var selectedVenue by remember { mutableStateOf<Venue?>(null) }
     var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
     var isLoadingMenu by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showCreateVenueSheet by remember { mutableStateOf(false) }
 
     // Lokacija i dozvole iz ViewModel-a
     val userLocation by homeViewModel.userLocation
@@ -102,8 +110,16 @@ fun HomeScreen(
         }
     }
 
+    fun handleOpenCreateVenueBottomSheet() {
+        showCreateVenueSheet = true
+    }
+
     // Venues iz ViewModel-a
     val venues by homeViewModel.venues
+
+    fun refetchVenues() {
+        homeViewModel.fetchVenues()
+    }
 
     // Go to location
     fun goToLocation(location: GeoPoint, durationMs: Int = 500) {
@@ -148,7 +164,7 @@ fun HomeScreen(
     // Handle navigation with location parameter
     LaunchedEffect(openedVenue) {
         openedVenue?.let {
-            goToLocation(it.location)
+            it.location?.let { loc -> goToLocation(loc) }
             selectedVenue = it
         }
     }
@@ -256,21 +272,25 @@ fun HomeScreen(
                 }
 
                 // Markeri za venues
-                venues?.forEach { venue ->
-                    Marker(
-                        state = MarkerState(position = LatLng(
-                            venue.location.latitude,
-                            venue.location.longitude
-                        )),
-                        title = venue.name,
-                        snippet = venue.category,
-                        onClick = { marker ->
-                            goToLocation(venue.location, 700)
-                            onMarkerClick(venue)
-                            true
-                        },
-                        icon = if (selectedVenue?.id == venue.id) darkIcon else icon,
-                    )
+                venues?.let {
+                    for (venue in it) {
+                        venue.location?.let { location ->
+                            Marker(
+                                state = MarkerState(position = LatLng(
+                                    location.latitude,
+                                    location.longitude
+                                )),
+                                title = venue.name,
+                                snippet = venue.category,
+                                onClick = {
+                                    goToLocation(location, 700)
+                                    onMarkerClick(venue)
+                                    true
+                                },
+                                icon = if (selectedVenue?.id == venue.id) darkIcon else icon,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -287,13 +307,31 @@ fun HomeScreen(
             )
         }
 
-        // Receive notifications button
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(16.dp)
         ) {
-            Row {
+            Column (
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Open add venue bottom sheet
+                FloatingActionButton(
+                    onClick = {
+                        handleOpenCreateVenueBottomSheet()
+                    },
+                    containerColor = Color.White,
+                    contentColor = Color.Black,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.RestaurantMenu,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // Receive notifications button
                 FloatingActionButton(
                     onClick = {
                         handleNotificationsToggle(
@@ -354,6 +392,33 @@ fun HomeScreen(
                 )
             }
         }
+
+        if (showCreateVenueSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showCreateVenueSheet = false },
+                sheetState = createVenueBottomSheetState
+            ) {
+                CreateVenueBottomSheet(
+                    onCreateVenue = { name, description, address, phone, category, imageUri ->
+                        scope.launch {
+                            userLocation?.let {
+                                val geoPoint = GeoPoint(it.latitude, it.longitude)
+                                homeViewModel.storeVenue(name, description, address, phone, category, imageUri, geoPoint)
+                                showCreateVenueSheet = false
+                                refetchVenues()
+                            }
+                        }
+                    },
+                    onClose = {
+                        scope.launch {
+                            createVenueBottomSheetState.hide()
+                            showCreateVenueSheet = false
+                        }
+                    }
+                )
+            }
+        }
+
     }
 }
 

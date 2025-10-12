@@ -2,18 +2,21 @@ package com.example.drinkly.ui.home
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drinkly.data.enum.MenuItemCategory
+import com.example.drinkly.data.helper.CloudinaryHelper
 import com.example.drinkly.data.model.MenuItem
 import com.example.drinkly.data.model.Venue
 import com.example.drinkly.data.repository.MenuItemRepository
 import com.example.drinkly.data.repository.VenueRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -95,6 +98,49 @@ class HomeViewModel(
         } catch (e: Exception) {
             println("Error loading menu items by category: ${e.message}")
             emptyList<MenuItem>()
+        }
+    }
+
+    /**
+     * Store new venue in Firestore and upload image to Cloudinary if provided.
+     */
+    suspend fun storeVenue(
+        name: String,
+        description: String,
+        address: String,
+        phone: String,
+        category: String,
+        imageUri: Uri?,
+        location: GeoPoint
+    ) : Result<String> {
+        return try {
+            var imageUrl = "";
+
+            if (imageUri != null) {
+                // Upload image to cloudinary and get URL
+                imageUrl = CloudinaryHelper.uploadImageToCloudinary(imageUri)
+            }
+
+            val result = venueRepository.storeVenue(
+                name,
+                description,
+                address,
+                phone,
+                category,
+                imageUrl,
+                location
+            )
+
+            result.onSuccess {
+                println("Successfully stored new venue: $it")
+            }.onFailure {
+                println("Error trying to store new venue: ${it.message}")
+            }
+
+            result
+        } catch (e: Exception) {
+            println("Error trying to store new venue: ${e.message}")
+            Result.failure(e)
         }
     }
 }
