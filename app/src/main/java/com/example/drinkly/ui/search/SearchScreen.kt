@@ -358,26 +358,15 @@ fun VenueCard(
     ) {
         Column {
             // Venue Image
-            if (venue.imageUrl != null) {
-                GlideImage(
-                    model = venue.imageUrl,
-                    contentDescription = venue.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(190.dp)
-                        .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(AppColorGray),
-                    contentAlignment = Alignment.Center
-                ) {}
-            }
+            GlideImage(
+                model = venue.displayImageUrl,
+                contentDescription = venue.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(190.dp)
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 0.dp, bottomEnd = 0.dp)),
+                contentScale = ContentScale.Crop
+            )
 
             Spacer(modifier = Modifier.height(6.dp))
 

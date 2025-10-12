@@ -31,9 +31,13 @@ data class Venue(
     @get:PropertyName("description") @set:PropertyName("description")
     var description: String = "",
 
-    @get:PropertyName("image_url") @set:PropertyName("image_url")
+    @set:PropertyName("image_url")
     var imageUrl: String = "",
 ) {
+    @get:PropertyName("image_url")
+    val displayImageUrl: String
+        get() = imageUrl.ifEmpty { "https://res.cloudinary.com/dm37pz7fz/image/upload/v1760305465/wg1v66swtytxz74ljszd.png" }
+
     // Potreban prazan konstruktor za Firestore
     constructor() : this("", "", "", "", GeoPoint(0.0,0.0), "", 0.0, 0, "", "")
 

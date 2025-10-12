@@ -142,7 +142,7 @@ fun VenueScreen(
             // Slika
            item {
                Image(
-                   imageUrl = venue.value?.imageUrl,
+                   imageUrl = venue.value?.displayImageUrl,
                    description = venue.value?.name,
                    height = 190.dp,
                    width = 200.dp,

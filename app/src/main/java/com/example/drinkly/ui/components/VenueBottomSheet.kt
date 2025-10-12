@@ -136,7 +136,7 @@ private fun VenueHeader(
                         .background(Color.White.copy(alpha = 0.3f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Avatar(venue.imageUrl, venue.name)
+                    Avatar(venue.displayImageUrl, venue.name)
                 }
 
                 Column (
