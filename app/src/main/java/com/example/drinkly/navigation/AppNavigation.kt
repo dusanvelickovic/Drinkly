@@ -31,10 +31,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.drinkly.data.model.Venue
 import com.example.drinkly.ui.leaderboard.LeaderboardScreen
 import com.example.drinkly.ui.profile.EditProfileScreen
 import com.example.drinkly.ui.venue_review.VenueReviewScreen
 import com.example.drinkly.ui.venue.VenueScreen
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun AppNavigation(
@@ -69,9 +73,9 @@ fun AppNavigation(
 
                     items.forEach { item ->
                         NavigationBarItem(
-                            selected = currentRoute == item.route,
+                            selected = currentRoute?.startsWith(item.route) == true,
                             onClick = {
-                                if (currentRoute != item.route) {
+                                if (currentRoute?.startsWith(item.route) != true) {
                                     navController.navigate(item.route) {
                                         popUpTo(navController.graph.startDestinationId) {
                                             saveState = true
@@ -85,10 +89,10 @@ fun AppNavigation(
                                 Icon(
                                     item.icon,
                                     contentDescription = item.label,
-                                    tint = if (currentRoute == item.route) Color(0xFFFE7622) else Color.Black
+                                    tint = if (currentRoute?.startsWith(item.route) == true) Color(0xFFFE7622) else Color.Black
                                 )
                             },
-                            label = { Text(item.label, color = if (currentRoute == item.route) Color(0xFFFE7622) else Color.Black) },
+                            label = { Text(item.label, color = if (currentRoute?.startsWith(item.route) == true) Color(0xFFFE7622) else Color.Black) },
                             colors = NavigationBarItemDefaults.colors(
                                 indicatorColor = Color(0xFFF6F8FA),
                             )
@@ -103,13 +107,24 @@ fun AppNavigation(
             startDestination = "login",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { HomeScreen(
-                navController = navController,
-            ) }
+            composable(
+                route = "home?openedVenue={openedVenue}",
+                arguments = listOf(navArgument("openedVenue") {
+                    type = NavType.StringType
+                    nullable = true
+                })
+            ) { backStackEntry ->
+                val venueJson = backStackEntry.arguments?.getString("openedVenue")
+                val venue = venueJson?.let { Gson().fromJson(it, Venue::class.java) }
+                HomeScreen(
+                    navController = navController,
+                    openedVenue = venue
+                )
+            }
             composable("search") {
                 SearchScreen(
                     onVenueCardClick = {
-                        venueId -> navController.navigate("venueScreen/$venueId")
+                            venueId -> navController.navigate("venueScreen/$venueId")
                     }
                 )
             }
@@ -133,12 +148,12 @@ fun AppNavigation(
                 LeaderboardScreen()
             }
             composable("editProfile") {
-                 EditProfileScreen(
-                     onBackClick = {
+                EditProfileScreen(
+                    onBackClick = {
                         navController.popBackStack()
-                     },
-                     authViewModel = viewModel<AuthViewModel>()
-                 )
+                    },
+                    authViewModel = viewModel<AuthViewModel>()
+                )
             }
             composable("login") {
                 LoginScreen(
@@ -173,7 +188,17 @@ fun AppNavigation(
                 VenueScreen(
                     venueId = venueId,
                     onBackClick = { navController.popBackStack() },
-                    onOpenReviewScreen = { id -> navController.navigate("venueReviews/$id") }
+                    onOpenReviewScreen = { id -> navController.navigate("venueReviews/$id") },
+                    onLocationClick = { venue ->
+                        val venueJson = Gson().toJson(venue)
+                        val encodedVenueJson = URLEncoder.encode(venueJson, StandardCharsets.UTF_8.name())
+                        navController.navigate("home?openedVenue=$encodedVenueJson") {
+                            popUpTo("home") {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             // Venue Screen Reviews
@@ -181,7 +206,7 @@ fun AppNavigation(
                 "venueReviews/{venueId}",
                 arguments = listOf(navArgument("venueId") { type = NavType.StringType })
             ) {
-                backStackEntry ->
+                    backStackEntry ->
                 val venueId = backStackEntry.arguments?.getString("venueId")
                 VenueReviewScreen(
                     venueId = venueId,

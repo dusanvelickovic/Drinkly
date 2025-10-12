@@ -45,15 +45,28 @@ import kotlinx.coroutines.launch
 import androidx.core.graphics.scale
 import com.example.drinkly.DrinklyApplication
 import com.example.drinkly.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.firebase.firestore.GeoPoint
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(),
     navController: NavController,
+    openedVenue: Venue? = null
 ) {
     val cameraPositionState = rememberCameraPositionState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // States za bottom sheet
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+    var selectedVenue by remember { mutableStateOf<Venue?>(null) }
+    var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
+    var isLoadingMenu by remember { mutableStateOf(false) }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     // Lokacija i dozvole iz ViewModel-a
     val userLocation by homeViewModel.userLocation
@@ -71,8 +84,37 @@ fun HomeScreen(
         }
     }
 
+    // Handle klik na marker
+    val onMarkerClick: (Venue) -> Unit = { venue ->
+        selectedVenue = venue
+        isLoadingMenu = true
+
+        scope.launch {
+            try {
+                // Učitaj menu items za selected venue
+                menuItems = homeViewModel.getMenuItemsForVenue(venue.id)
+                isLoadingMenu = false
+                showBottomSheet = true
+            } catch (e: Exception) {
+                isLoadingMenu = false
+                println("Greška pri učitavanju menu items: ${e.message}")
+            }
+        }
+    }
+
     // Venues iz ViewModel-a
     val venues by homeViewModel.venues
+
+    // Go to location
+    fun goToLocation(location: GeoPoint, durationMs: Int = 500) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        scope.launch {
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newCameraPosition(CameraPosition.fromLatLngZoom(latLng, 15f)),
+                durationMs = durationMs
+            )
+        }
+    }
 
     // Inicijalno podešavanje dozvola i lokacije
     LaunchedEffect(Unit) {
@@ -94,9 +136,20 @@ fun HomeScreen(
 
     // Postavi kameru kada se učita korisnikova lokacija
     LaunchedEffect(userLocation) {
-        userLocation?.let { location ->
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
-            println("Kamera pozicionirana na: ${location.latitude}, ${location.longitude}")
+        userLocation?.let { loc ->
+            // Only set initial position if no location is passed via navigation
+            if (openedVenue == null) {
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(loc, 15f)
+                println("Kamera pozicionirana na: ${loc.latitude}, ${loc.longitude}")
+            }
+        }
+    }
+
+    // Handle navigation with location parameter
+    LaunchedEffect(openedVenue) {
+        openedVenue?.let {
+            goToLocation(it.location)
+            selectedVenue = it
         }
     }
 
@@ -116,16 +169,6 @@ fun HomeScreen(
             """.trimIndent()
         )
     }
-
-    // States za bottom sheet
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
-    val scope = rememberCoroutineScope()
-    var selectedVenue by remember { mutableStateOf<Venue?>(null) }
-    var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
-    var isLoadingMenu by remember { mutableStateOf(false) }
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     // Live user location
     val locationViewModel = (LocalContext.current.applicationContext as DrinklyApplication).locationViewModel
@@ -159,23 +202,7 @@ fun HomeScreen(
         }
     }
 
-    // Handle klik na marker
-    val onMarkerClick: (Venue) -> Unit = { venue ->
-        selectedVenue = venue
-        isLoadingMenu = true
 
-        scope.launch {
-            try {
-                // Učitaj menu items za selected venue
-                menuItems = homeViewModel.getMenuItemsForVenue(venue.id)
-                isLoadingMenu = false
-                showBottomSheet = true
-            } catch (e: Exception) {
-                isLoadingMenu = false
-                println("Greška pri učitavanju menu items: ${e.message}")
-            }
-        }
-    }
 
     val onMenuItemCategoryClick: (MenuItemCategory) -> Unit = { category ->
         if (selectedVenue != null) {
@@ -216,6 +243,13 @@ fun HomeScreen(
                 )
             ) {
                 val originalBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.glass_icon)
+                val darkBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.glass_icon_dark)
+
+                val darkIcon = darkBitmap?.let {
+                    val scaledBitmap = it.scale(80, 120, false)
+                    BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                }
+
                 val icon = originalBitmap?.let {
                     val scaledBitmap = it.scale(60, 100, false)
                     BitmapDescriptorFactory.fromBitmap(scaledBitmap)
@@ -231,10 +265,11 @@ fun HomeScreen(
                         title = venue.name,
                         snippet = venue.category,
                         onClick = { marker ->
+                            goToLocation(venue.location, 700)
                             onMarkerClick(venue)
                             true
                         },
-                        icon = icon,
+                        icon = if (selectedVenue?.id == venue.id) darkIcon else icon,
                     )
                 }
             }
@@ -284,6 +319,7 @@ fun HomeScreen(
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
+                    selectedVenue = null
                 },
                 sheetState = bottomSheetState,
                 dragHandle = {
@@ -309,6 +345,7 @@ fun HomeScreen(
                         scope.launch {
                             bottomSheetState.hide()
                             showBottomSheet = false
+                            selectedVenue = null
                         }
                     },
                     onVenueClick = {

@@ -36,6 +36,8 @@ import com.example.drinkly.ui.components.VenueCategoryChip
 import com.example.drinkly.ui.theme.AppColorBg
 import com.example.drinkly.ui.theme.AppColorOrange
 import androidx.core.net.toUri
+import com.example.drinkly.data.model.Venue
+import com.google.firebase.firestore.GeoPoint
 
 @Composable
 fun ClickablePhoneNumber(phoneNumber: String) {
@@ -66,7 +68,8 @@ fun VenueScreen(
     venueId: String?,
     venueViewModel: VenueViewModel = viewModel(),
     onBackClick: () -> Unit,
-    onOpenReviewScreen: (venueId: String?) -> Unit
+    onOpenReviewScreen: (venueId: String?) -> Unit,
+    onLocationClick: (venue: Venue) -> Unit
 ) {
     val isLoading = venueViewModel.isLoading.collectAsState().value
 
@@ -177,7 +180,7 @@ fun VenueScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Rating, Delivery Fee, and Time
+                    // Rating, Phone and Location
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -231,7 +234,12 @@ fun VenueScreen(
                         // Adresa
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.clickable {
+                                venue.value?.let {
+                                    onLocationClick(it)
+                                }
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
