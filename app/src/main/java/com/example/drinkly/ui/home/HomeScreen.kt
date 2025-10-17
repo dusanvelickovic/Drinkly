@@ -46,6 +46,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import androidx.core.graphics.scale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.drinkly.DrinklyApplication
 import com.example.drinkly.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -118,11 +119,7 @@ fun HomeScreen(
     }
 
     // Venues iz ViewModel-a
-    val venues by homeViewModel.venues
-
-    fun refetchVenues() {
-        homeViewModel.fetchVenues()
-    }
+    val venues by homeViewModel.venues.collectAsStateWithLifecycle()
 
     // Go to location
     fun goToLocation(location: GeoPoint, durationMs: Int = 500) {
@@ -149,8 +146,6 @@ fun HomeScreen(
         } else {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
-
-        homeViewModel.fetchVenues()
     }
 
     // Set camera to user's location on first launch
@@ -271,24 +266,22 @@ fun HomeScreen(
                 }
 
                 // Markeri za venues
-                venues?.let {
-                    for (venue in it) {
-                        venue.location?.let { location ->
-                            Marker(
-                                state = MarkerState(position = LatLng(
-                                    location.latitude,
-                                    location.longitude
-                                )),
-                                title = venue.name,
-                                snippet = venue.category,
-                                onClick = {
-                                    goToLocation(location, 700)
-                                    onMarkerClick(venue)
-                                    true
-                                },
-                                icon = if (selectedVenue?.id == venue.id) darkIcon else icon,
-                            )
-                        }
+                for (venue in venues) {
+                    venue.location?.let { location ->
+                        Marker(
+                            state = MarkerState(position = LatLng(
+                                location.latitude,
+                                location.longitude
+                            )),
+                            title = venue.name,
+                            snippet = venue.category,
+                            onClick = {
+                                goToLocation(location, 700)
+                                onMarkerClick(venue)
+                                true
+                            },
+                            icon = if (selectedVenue?.id == venue.id) darkIcon else icon,
+                        )
                     }
                 }
             }
@@ -404,7 +397,6 @@ fun HomeScreen(
                                 val geoPoint = GeoPoint(it.latitude, it.longitude)
                                 homeViewModel.storeVenue(name, description, address, phone, category, imageUri, geoPoint)
                                 showCreateVenueSheet = false
-                                refetchVenues()
                             }
                         }
                     },

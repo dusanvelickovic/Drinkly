@@ -17,6 +17,10 @@ import com.example.drinkly.data.repository.VenueRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.GeoPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -29,6 +33,13 @@ class HomeViewModel(
 
     private val _hasLocationPermission = mutableStateOf(false)
     val hasLocationPermission: State<Boolean> = _hasLocationPermission
+
+    private val _venues = MutableStateFlow<List<Venue>>(emptyList())
+    val venues: StateFlow<List<Venue>> = _venues.asStateFlow()
+
+    init {
+        fetchVenues()
+    }
 
     fun updateLocationPermissionGranted(granted: Boolean) {
         _hasLocationPermission.value = granted
@@ -58,18 +69,19 @@ class HomeViewModel(
         }
     }
 
-    private val _venues = mutableStateOf<List<Venue>?>(null)
-    val venues: State<List<Venue>?> = _venues
-
-    fun fetchVenues() {
+    /**
+     * Ucitaj sve venue iz Firestore
+     */
+    private fun fetchVenues() {
         viewModelScope.launch {
-            val result = venueRepository.searchVenues()
-            result.onSuccess {
-                _venues.value = it
-                println("Loaded ${it.size} venues")
-            }.onFailure {
-                println("Venue load failed: ${it.message}")
-            }
+            venueRepository.getVenuesFlow()
+                .catch { exception ->
+                    println("Venue load failed: ${exception.message}")
+                }
+                .collect { venueList ->
+                    _venues.value = venueList
+                    println("Loaded ${venueList.size} venues")
+                }
         }
     }
 

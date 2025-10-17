@@ -4,11 +4,44 @@ import android.location.Location
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.drinkly.data.model.Venue
 import com.google.firebase.firestore.GeoPoint
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class VenueRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
+    /**
+     * Get a flow of venues that emits updates in real-time.
+     */
+    fun getVenuesFlow(): Flow<List<Venue>> = callbackFlow {
+        val listener = firestore.collection("venues")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val venues = snapshot.documents.mapNotNull { document ->
+                        try {
+                            document.toObject(Venue::class.java)?.apply {
+                                id = document.id
+                            }
+                        } catch (ex: Exception) {
+                            println("Failed to convert document ${document.id}: ${ex.message}")
+                            null
+                        }
+                    }
+                    trySend(venues)
+                }
+            }
+
+        // When the flow is cancelled, remove the listener
+        awaitClose { listener.remove() }
+    }
+
     /**
      * Search venues by category, name, and optional radius from user's location.
      */
